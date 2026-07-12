@@ -55,6 +55,47 @@
 // centre, the classic pre-processing step that turns rotation and scaling about
 // that centre into translation.
 //
+// # Filter kernels
+//
+// [GetGaussianKernel] returns the normalised 1-D Gaussian smoothing coefficients
+// (with OpenCV's fixed small-aperture tables and auto-sigma rule), and
+// [GetDerivKernels] builds the separable Sobel factors for an arbitrary
+// derivative order and aperture. [GetGaborKernel] (above) completes the set of
+// kernel builders. [CreateHanningWindow] produces a 2-D raised-cosine window for
+// tapering an image before a Fourier transform.
+//
+// # Derivatives and corners
+//
+// [SpatialGradient] returns the 3×3 Sobel x- and y-derivatives of an image.
+// Building on the local structure tensor, [CornerEigenValsAndVecs] reports the
+// eigenvalues and eigenvectors at every pixel, [CornerMinEigenVal] the Shi–Tomasi
+// corner strength, and [PreCornerDetect] the classic corner-candidate map. These
+// complement the root package's [cv.CornerHarris].
+//
+// # Motion analysis
+//
+// The accumulators [Accumulate], [AccumulateSquare], [AccumulateProduct] and
+// [AccumulateWeighted] maintain running per-pixel statistics (sum, energy,
+// cross-term and exponential average) over a stream of frames, the basis of
+// simple background models.
+//
+// # Segmentation and distance
+//
+// [FloodFill] grows a connected region from a seed under fixed- or
+// floating-range colour tolerance, optionally guided and recorded by a mask, and
+// reports the filled area and bounding rectangle. [DistanceTransformWithLabels]
+// returns, for every foreground pixel, the distance to and identity of the
+// nearest background pixel (the background's Voronoi diagram). [BlendLinear]
+// composites two images under per-pixel weight maps.
+//
+// # Integral images and matching
+//
+// [IntegralTilted] builds the 45°-rotated summed-area table (read with
+// [TiltedSum]), complementing the upright [IntegralImage]. [HoughLinesPointSet]
+// fits lines directly to a sparse point set by Hough voting, and [EMD] computes
+// the Earth Mover's Distance between two weighted signatures by solving the
+// underlying transportation problem exactly.
+//
 // # Conventions and determinism
 //
 // Coordinates follow the cv convention: x is the column and y is the row, with

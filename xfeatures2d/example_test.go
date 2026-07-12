@@ -85,3 +85,161 @@ func ExampleBRISK_Compute() {
 	// Output:
 	// hamming: 0
 }
+
+// tiledExample builds a 220×220 image whose intensity is exactly periodic with
+// the given period, so points a whole period apart have identical
+// neighbourhoods. It is the example counterpart of the test helper of the same
+// shape.
+func tiledExample(period int) *cv.Mat {
+	m := cv.NewMat(220, 220, 1)
+	for y := 0; y < 220; y++ {
+		for x := 0; x < 220; x++ {
+			u, v := x%period, y%period
+			m.Data[y*220+x] = uint8((u*7 + v*13 + u*v*3) % 256)
+		}
+	}
+	return m
+}
+
+// ExampleFREAK shows that two points a full texture period apart yield the same
+// rotation-invariant binary descriptor (Hamming distance 0).
+func ExampleFREAK() {
+	img := tiledExample(40)
+	f := xfeatures2d.NewFREAK(20)
+	_, descs := f.Compute(img, []xfeatures2d.KeyPoint{
+		{Pt: cv.Point{X: 70, Y: 110}},
+		{Pt: cv.Point{X: 110, Y: 110}},
+	})
+	fmt.Println("match:", xfeatures2d.HammingDistance(descs[0], descs[1]) == 0)
+	// Output:
+	// match: true
+}
+
+// ExampleDAISY computes the dense gradient-histogram descriptor and compares two
+// identical neighbourhoods (L2 distance 0).
+func ExampleDAISY() {
+	img := tiledExample(40)
+	d := xfeatures2d.NewDAISY()
+	_, descs := d.Compute(img, []xfeatures2d.KeyPoint{
+		{Pt: cv.Point{X: 70, Y: 110}},
+		{Pt: cv.Point{X: 110, Y: 110}},
+	})
+	fmt.Println("dim:", len(descs[0]))
+	fmt.Println("identical:", xfeatures2d.L2Distance(descs[0], descs[1]) < 1e-9)
+	// Output:
+	// dim: 200
+	// identical: true
+}
+
+// ExampleSURF_Compute describes a shifted copy of a neighbourhood and confirms
+// the two SURF descriptors coincide.
+func ExampleSURF_Compute() {
+	img := tiledExample(40)
+	s := xfeatures2d.NewSURF(200)
+	_, descs := s.Compute(img, []xfeatures2d.KeyPoint{
+		{Pt: cv.Point{X: 70, Y: 110}},
+		{Pt: cv.Point{X: 110, Y: 110}},
+	})
+	fmt.Println("shifted copy matches:", xfeatures2d.L2Distance(descs[0], descs[1]) < 1e-9)
+	// Output:
+	// shifted copy matches: true
+}
+
+// ExampleLUCID builds the rank-order descriptor and shows it is illumination
+// invariant for identical neighbourhoods (distance 0).
+func ExampleLUCID() {
+	img := tiledExample(40)
+	l := xfeatures2d.NewLUCID(5, 2)
+	_, descs := l.Compute(img, []xfeatures2d.KeyPoint{
+		{Pt: cv.Point{X: 70, Y: 110}},
+		{Pt: cv.Point{X: 110, Y: 110}},
+	})
+	fmt.Println("distance:", xfeatures2d.LUCIDDistance(descs[0], descs[1]))
+	// Output:
+	// distance: 0
+}
+
+// ExampleBEBLID computes the boosted box descriptor for two identical
+// neighbourhoods.
+func ExampleBEBLID() {
+	img := tiledExample(40)
+	b := xfeatures2d.NewBEBLID(32)
+	_, descs := b.Compute(img, []xfeatures2d.KeyPoint{
+		{Pt: cv.Point{X: 70, Y: 110}},
+		{Pt: cv.Point{X: 110, Y: 110}},
+	})
+	fmt.Println("hamming:", xfeatures2d.HammingDistance(descs[0], descs[1]))
+	// Output:
+	// hamming: 0
+}
+
+// ExampleMSDDetector finds maximal-self-dissimilarity keypoints on a grid of
+// squares.
+func ExampleMSDDetector() {
+	img := cv.NewMat(120, 120, 1)
+	for by := 0; by < 3; by++ {
+		for bx := 0; bx < 3; bx++ {
+			ox, oy := 12+bx*32, 12+by*32
+			for y := 0; y < 20; y++ {
+				for x := 0; x < 20; x++ {
+					img.Data[(oy+y)*120+(ox+x)] = 255
+				}
+			}
+		}
+	}
+	det := xfeatures2d.NewMSDDetector()
+	det.Threshold = 100
+	fmt.Println("found:", len(det.Detect(img)) > 0)
+	// Output:
+	// found: true
+}
+
+// ExamplePCTSignatures computes a PCT signature and shows the SQFD of a
+// signature with itself is zero.
+func ExamplePCTSignatures() {
+	img := cv.NewMat(120, 120, 1)
+	for y := 0; y < 120; y++ {
+		for x := 0; x < 120; x++ {
+			if (x/20+y/20)%2 == 0 {
+				img.Data[y*120+x] = 255
+			}
+		}
+	}
+	sig := xfeatures2d.NewPCTSignatures().ComputeSignature(img)
+	fmt.Println("non-empty:", len(sig) > 0)
+	fmt.Printf("self SQFD: %.0f\n", xfeatures2d.SQFD(sig, sig, 1.0))
+	// Output:
+	// non-empty: true
+	// self SQFD: 0
+}
+
+// ExampleMatchGMS filters a set of putative matches, keeping the geometrically
+// consistent cluster and discarding scattered outliers.
+func ExampleMatchGMS() {
+	var kp1, kp2 []xfeatures2d.KeyPoint
+	var matches []xfeatures2d.DMatch
+	// A consistent block of matches translated by (20, 20).
+	for gy := 0; gy < 10; gy++ {
+		for gx := 0; gx < 10; gx++ {
+			x, y := 40+gx*4, 40+gy*4
+			i := len(kp1)
+			kp1 = append(kp1, xfeatures2d.KeyPoint{Pt: cv.Point{X: x, Y: y}})
+			kp2 = append(kp2, xfeatures2d.KeyPoint{Pt: cv.Point{X: x + 20, Y: y + 20}})
+			matches = append(matches, xfeatures2d.DMatch{QueryIdx: i, TrainIdx: i, Distance: 1})
+		}
+	}
+	inliers := len(matches)
+	// Scattered outliers.
+	for k := 0; k < 40; k++ {
+		i := len(kp1)
+		kp1 = append(kp1, xfeatures2d.KeyPoint{Pt: cv.Point{X: 5 + (k*37)%180, Y: 5 + (k*53)%180}})
+		kp2 = append(kp2, xfeatures2d.KeyPoint{Pt: cv.Point{X: 5 + (k*91)%180, Y: 5 + (k*29)%180}})
+		matches = append(matches, xfeatures2d.DMatch{QueryIdx: i, TrainIdx: i, Distance: 1})
+	}
+	kept := xfeatures2d.MatchGMS(200, 200, 200, 200, kp1, kp2, matches, false, false, 6)
+	fmt.Println("kept fewer than input:", len(kept) < len(matches))
+	fmt.Println("kept the cluster:", len(kept) >= inliers-10)
+	// Output:
+	// kept fewer than input: true
+	// kept the cluster: true
+}

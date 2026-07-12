@@ -25,6 +25,44 @@
 //     mean-shift smoothing in the joint spatial-range domain, collapsing each
 //     pixel onto the mode of its local colour distribution.
 //
+// # Region-labelling segmenters
+//
+// A second family of routines produces a dense region labelling rather than a
+// binary or marker image. Because a [cv.Mat] cannot store more than 256 distinct
+// labels, these return a [LabelMap] — a flat []int labelling with helpers
+// [LabelMap.Colorize], [LabelMap.BoundaryMask], [LabelMap.RegionSizes] and
+// [LabelMap.BoundingRects] to turn it back into a viewable image or measurements.
+//
+//   - [EfficientGraphSegmentation] is the Felzenszwalb-Huttenlocher
+//     minimum-spanning-forest segmenter (the basis of ximgproc's
+//     GraphSegmentation).
+//   - [SelectiveSearchSegmentation] hierarchically merges those regions to emit
+//     object-proposal bounding boxes (Uijlings et al.).
+//   - [SLIC] computes compact, boundary-adhering superpixels (Achanta et al.).
+//   - [KMeansSegmentation] performs deterministic k-means colour quantisation.
+//   - [RegionGrowing] grows labelled regions from seed points by colour
+//     similarity, best-first for order independence.
+//   - [MeanShiftSegmentation] turns [MeanShiftFiltering] into a full labelling by
+//     grouping adjacent modes and pruning small regions.
+//   - [MultiOtsu] and [MultiOtsuThreshold] compute multi-level Otsu thresholds
+//     and the resulting class image.
+//
+// # Watershed and distance transforms
+//
+//   - [DistanceTransform] is the exact Euclidean distance transform (Felzenszwalb
+//     & Huttenlocher two-pass algorithm), equivalent to cv2.distanceTransform.
+//   - [DistanceTransformWatershed] seeds a watershed from the distance-transform
+//     peaks to split touching blobs such as overlapping circles.
+//
+// # Region graphs and interactive tools
+//
+//   - [BuildRAG] constructs a Region Adjacency Graph over a [LabelMap]; its
+//     [RAG.MergeByColor] and [RAG.MergeBySize] methods agglomeratively merge
+//     regions by colour similarity or to remove speckle.
+//   - [IntelligentScissors] implements the live-wire boundary tool: a
+//     gradient-cost Dijkstra map from a seed ([IntelligentScissors.BuildMap])
+//     that snaps traced contours ([IntelligentScissors.Trace]) to edges.
+//
 // # Conventions
 //
 // Coordinates follow the root package: a [cv.Point] carries x (column) and y

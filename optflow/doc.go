@@ -26,6 +26,28 @@
 //   - [CalcOpticalFlowSparseToDense] — tracks sparse seed points with local
 //     Lucas-Kanade and interpolates the matches to a dense field using
 //     edge-aware (bilateral) weighting that keeps motion boundaries crisp.
+//   - [CalcOpticalFlowDenseTVL1] and [DualTVL1OpticalFlow] — the duality-based
+//     TV-L1 method of Zach, Pock & Bischof: an L1 (robust) brightness-constancy
+//     data term with total-variation regularisation, minimised by an alternating
+//     primal-dual scheme coarse-to-fine with per-level warping.
+//   - [DeepFlow] — a lightweight DeepFlow: a dense integer descriptor-matching
+//     field seeds a coarse-to-fine variational refinement (matching + data +
+//     smoothness), recovering large displacements a differential solver cannot.
+//   - [CalcOpticalFlowPCAFlow] — PCAFlow: sparse Lucas-Kanade matches are fitted
+//     in a low-dimensional cosine (PCA-prior) subspace by ridge least squares,
+//     giving an inherently smooth global-motion field.
+//   - [CalcOpticalFlowSparseRLOF] and [CalcOpticalFlowDenseRLOF] — Robust Local
+//     Optical Flow: illumination-robust, Huber-reweighted Lucas-Kanade, densified
+//     by edge-aware interpolation.
+//   - [CalcOpticalFlowSimpleFlow] — SimpleFlow: a non-iterative, bilaterally
+//     weighted candidate-flow search with softmin sub-pixel estimation.
+//   - [InterpolateFlow] and [InterpolateFlowGuided] — scattered-data
+//     densification of sparse flow samples, geometric or edge-aware.
+//   - [ReadOpticalFlow] / [WriteOpticalFlow] (and the io variants [ReadFlow] /
+//     [WriteFlow]) — the Middlebury .flo binary interchange format.
+//   - [EndpointError] / [AverageEndpointError] (AEE), [AngularError] /
+//     [AverageAngularError] and [EndpointErrorStats] — the standard optical-flow
+//     accuracy metrics against a ground-truth field.
 //   - [FlowToColor] — renders a flow field as an RGB image using the Middlebury
 //     colour-wheel convention (hue = direction, saturation = magnitude).
 //   - [WarpByFlow] — warps an image by a flow field (inverse remap), so that
@@ -48,12 +70,15 @@
 // map-iteration order affects any result. Ties in the discrete searches are
 // broken by fixed rules (smaller displacement magnitude, then row-major order).
 //
-// # Deferred
+// # Scope notes
 //
-// The following related methods are intentionally out of scope for this
-// stdlib-only port and are listed for completeness: true TV-L1 optical flow
-// (the primal-dual variational method), DeepFlow / PCAFlow, and RLOF (Robust
-// Local Optical Flow). CalcOpticalFlowDIS is a lightweight approximation of the
-// DIS family rather than a faithful reimplementation of the full gradient-based
-// inverse-search operator with variational refinement.
+// The dense TV-L1 solver is a faithful implementation of the primal-dual
+// duality-based method. [DeepFlow], [CalcOpticalFlowPCAFlow], the RLOF trackers
+// and [CalcOpticalFlowSimpleFlow] are self-contained ports that capture the
+// defining mechanism of each algorithm (descriptor matching + variational
+// refinement, a learned-basis subspace fit, robust reweighted tracking and
+// bilateral candidate search respectively) rather than bit-exact reproductions
+// of the OpenCV contrib code and its trained models. [CalcOpticalFlowDIS]
+// remains a lightweight approximation of the DIS family rather than a faithful
+// reimplementation of the full gradient-based inverse-search operator.
 package optflow

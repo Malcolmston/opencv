@@ -33,6 +33,36 @@
 // metric is evaluated, matching common reference implementations. MSE, MAE and
 // PSNR operate channel by channel.
 //
+// # Additional full-reference metrics
+//
+// The package adds a broader family of full-reference metrics:
+//
+//   - [RMSE] / [NRMSE] — the (range-normalised) root-mean-squared error, one
+//     value per channel. Lower is better; identical images score zero.
+//   - [SNR] — signal-to-noise ratio in decibels, pooled over channels. Higher
+//     is better; identical images score +Inf.
+//   - [SSIMMap] — the per-pixel [SSIM] similarity image on its own.
+//   - [VIFP] / [VIF] — visual information fidelity in the pixel domain and over
+//     a bandpass pyramid (Sheikh & Bovik 2006). 1 for identical images.
+//   - [FSIM] / [FSIMc] — feature-similarity index (phase congruency + gradient
+//     magnitude), grayscale and colour (Zhang et al. 2011). 1 for identical.
+//   - [IWSSIM] — information-content-weighted multi-scale SSIM (Wang & Li 2011).
+//   - [VSI] — visual-saliency-induced index (Zhang et al. 2014).
+//   - [CWSSIM] — complex-wavelet SSIM, robust to small shifts (Wang &
+//     Simoncelli 2005), via a steerable-pyramid approximation.
+//   - [EdgePreservationRatio] — correlation of the two images' Laplacian
+//     responses; 1 when edges are perfectly preserved.
+//   - [EntropyDiff] — absolute difference of luminance [Entropy]; 0 for equal
+//     histograms.
+//
+// The phase-congruency term of FSIM/FSIMc, the saliency map of VSI and the
+// steerable pyramid of CWSSIM are documented approximations of the transforms
+// used in the source papers: they preserve the metrics' defining behaviour
+// (identical images score best, distortions rank consistently) without an FFT
+// or a log-Gabor filter bank. Every metric here is evaluated on luminance
+// (using I/Q chrominance in addition, for FSIMc and colour VSI), except the
+// per-channel error metrics RMSE, NRMSE and SNR.
+//
 // # No-reference metrics
 //
 // No-reference (NR) metrics score a single image with no pristine original.
@@ -48,13 +78,24 @@
 //     It is not the calibrated OpenCV BRISQUE score (which requires a trained
 //     support-vector regressor); it is a deterministic naturalness/activity
 //     proxy where higher values indicate more high-frequency structure.
+//   - [Entropy] — the Shannon entropy, in bits, of the luminance histogram.
+//   - [NIQE] — the Natural Image Quality Evaluator (Mittal et al. 2013), an
+//     opinion-unaware naturalness distance from a fixed pristine model built
+//     from generalised-Gaussian fits to MSCN coefficients and their paired
+//     products at two scales. Lower is better. The pristine mean vector and a
+//     diagonal covariance are documented fixed parameters; this is a
+//     self-contained variant of NIQE rather than the exact OpenCV model.
+//   - [PIQE] — the Perception-based Image Quality Evaluator (Venkatanath et al.
+//     2015), a block-based, opinion-unaware measure that scores the spatially
+//     active MSCN blocks for noise and blockiness. Lower is better.
 //
 // # The QualityBase pattern
 //
 // Mirroring OpenCV's cv::quality::QualityBase, each full-reference metric also
 // has an object form that is constructed once with the reference image and then
 // applied to many candidates. Construct one with [NewQualityMSE],
-// [NewQualityPSNR], [NewQualitySSIM] or [NewQualityGMSD]; each satisfies the
+// [NewQualityPSNR], [NewQualitySSIM], [NewQualityGMSD], [NewQualityRMSE],
+// [NewQualityFSIM], [NewQualityFSIMc] or [NewQualityVIFP]; each satisfies the
 // [QualityBase] interface, exposing Compute (returning the score as a slice,
 // one element per channel or a single pooled value) and QualityMap (the
 // per-pixel error/similarity map produced by the most recent Compute).

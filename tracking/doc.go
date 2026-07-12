@@ -1,10 +1,25 @@
 // Package tracking implements single-object (short-term) visual trackers on top
 // of the standard-library-only OpenCV port github.com/malcolmston/opencv
 // (imported here as cv). It mirrors a useful subset of OpenCV's tracking and
-// video modules: a common [Tracker] interface, a template-matching tracker, a
-// KCF-lite correlation tracker, a Median-Flow tracker, and the classic
-// histogram-driven mean-shift and CamShift trackers together with the low-level
-// [MeanShift] and [CamShift] search routines.
+// video modules: a common [Tracker] interface, a template-matching tracker,
+// classic histogram-driven mean-shift and CamShift trackers with the low-level
+// [MeanShift] and [CamShift] routines, a Median-Flow tracker, and a family of
+// modern trackers built on a genuine Fourier-domain correlation-filter core and
+// on online-learning detectors:
+//
+//   - [TrackerMOSSE] — the MOSSE minimum-output-sum-of-squared-error filter.
+//   - [TrackerDCF] — a faithful kernelised correlation filter (KCF) with a
+//     Gaussian kernel and multi-scale search.
+//   - [TrackerKCFHOG] — KCF driven by multi-channel HOG features ([HOGCells]).
+//   - [TrackerCSRT] — a channel-and-spatial-reliability DCF.
+//   - [TrackerMIL] — multiple-instance-learning boosting over Haar features.
+//   - [TrackerBoosting] — online AdaBoost over Haar features.
+//   - [TrackerTLD] — tracking-learning-detection with full-frame re-detection.
+//   - [MultiTracker] — drives many trackers on one frame at once.
+//
+// The Fourier-domain machinery is exported in its own right: [ComplexMat] with
+// the radix-2 [FFT2] / [IFFT2] transforms, [HannWindow2D], [GaussianResponse],
+// [NextPow2] and the [HOGCells] descriptor.
 //
 // # The Tracker interface
 //
@@ -14,6 +29,35 @@
 // are [cv.Rect] values (integer top-left corner, width and height); frames are
 // [cv.Mat] images. Colour frames (3-channel RGB) are converted internally; the
 // appearance trackers work on luma, the histogram trackers on hue.
+//
+// # Per-frame confidence
+//
+// The learning trackers additionally satisfy [ConfidenceTracker], whose
+// UpdateConfidence returns a continuous score alongside the box instead of only
+// a boolean: a peak-to-sidelobe ratio (MOSSE, CSRT), a peak correlation response
+// (DCF, KCF-HOG), a classifier margin (MIL, Boosting) or a template similarity
+// (TLD). Higher always means more reliable within a given tracker.
+//
+// # Fourier-domain correlation filters
+//
+// [TrackerMOSSE], [TrackerDCF], [TrackerKCFHOG] and [TrackerCSRT] all normalise
+// the object window to a fixed power-of-two model size, preprocess it (log,
+// zero-mean, unit-norm, Hann-windowed) and learn a filter in the frequency
+// domain with the package's own [FFT2]. MOSSE learns the closed-form MOSSE
+// filter; DCF and KCF-HOG learn Henriques's kernelised ridge-regression filter
+// with a Gaussian kernel and search several scales per frame; CSRT runs a
+// per-channel filter bank weighted by channel reliability and constrained by a
+// spatial-reliability foreground mask.
+//
+// # Online-learning detectors
+//
+// [TrackerMIL] and [TrackerBoosting] classify generalised Haar features read
+// from an integral image. MIL trains a strong classifier by greedy MILBoost
+// selection over positive/negative bags; Boosting runs discrete AdaBoost over
+// online weak learners. [TrackerTLD] pairs the Median-Flow tracker with a
+// nearest-neighbour template detector scanned across the whole frame, letting it
+// re-detect the object after occlusion. All three are deterministic given their
+// seeds.
 //
 // # Trackers
 //
@@ -70,11 +114,19 @@
 //
 // # Deferred
 //
-//   - True KCF: kernelised ridge regression correlation filter with an FFT; this
-//     package ships an online-NCC approximation instead.
-//   - A Fourier-domain (DFT) correlation filter of any kind.
-//   - Pyramidal Lucas-Kanade for large inter-frame motion in [TrackerMedianFlow].
-//   - Multi-scale search in [TrackerTemplate] and [TrackerKCF] (both track at a
-//     fixed box size; only Median-Flow and CamShift adapt scale).
-//   - Long-term re-detection / occlusion recovery (e.g. TLD).
+// The following remain approximated or unimplemented:
+//
+//   - Pyramidal Lucas-Kanade for large inter-frame motion in [TrackerMedianFlow]
+//     (still single-level).
+//   - Multi-scale search in [TrackerTemplate] and the legacy online-NCC
+//     [TrackerKCF] (both track at a fixed box size; [TrackerDCF] and
+//     [TrackerKCFHOG] add the FFT machinery and scale search the older
+//     approximations lacked).
+//   - A dedicated 1-D scale filter (DSST-style); the KCF trackers estimate scale
+//     from a small discrete set of scaled windows, which handles moderate but not
+//     large scale change.
+//   - Mixed-radix / Bluestein FFT for arbitrary sizes: [FFT2] is radix-2, so the
+//     correlation filters resize the object window to a power-of-two model size.
+//   - The full CSRT ADMM filter optimisation and per-channel HOG/colour-names
+//     features; [TrackerCSRT] is a lite intensity+gradient variant.
 package tracking

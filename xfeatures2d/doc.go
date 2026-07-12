@@ -43,7 +43,22 @@
 // those that are also extrema of the scale-normalised Laplacian, yielding
 // scale-adapted keypoints.
 //
-// # Descriptor
+// [MSDDetector] scores each pixel by its Maximal Self-Dissimilarity — the
+// average patch distance to the least dissimilar patches in a surrounding search
+// area — and keeps the local maxima, favouring points that stand out from their
+// neighbourhood.
+//
+// [TBMR] reports Tree-Based Morse Regions: extremal regions of the image
+// component tree that stay stable across a range of grey levels (the same
+// stability criterion as MSER), for both the bright (max-tree) and dark
+// (min-tree) trees.
+//
+// [SURF] is a lightweight Fast-Hessian detector (and descriptor): the
+// determinant of a box-filter approximation of the Hessian, evaluated through an
+// integral image over a range of scales, whose scale-space maxima are the
+// keypoints.
+//
+// # Descriptors
 //
 // [BRISK] computes a rotation-invariant binary descriptor. It samples image
 // intensities on a set of concentric rings, Gaussian-smoothing each sample by a
@@ -52,19 +67,60 @@
 // pairs are compared to produce the descriptor bits. Two descriptors are compared
 // with the Hamming distance ([HammingDistance]).
 //
+// [BRIEF] compares the smoothed intensities of a fixed pseudo-random set of
+// point pairs (upright, not rotation invariant). [FREAK] uses a retina-like
+// pattern of overlapping receptive fields with an orientation estimate for
+// rotation invariance. [LATCH] compares three small patches per bit for noise
+// robustness. [BEBLID], [TEBLID] and [BoostDesc] are boosted binary descriptors
+// whose bits threshold the difference of two box averages (of intensity for
+// BEBLID/TEBLID, of gradient magnitude for BoostDesc); they use the same
+// weak-learner form as OpenCV but a fixed, untrained (weight-free) arrangement,
+// so no learned tables are embedded. All of these are compared with
+// [HammingDistance].
+//
+// [LUCID] records the rank order of the pixels in a blurred neighbourhood, an
+// illumination-invariant representation compared with [LUCIDDistance].
+//
+// [DAISY] and [VGG] are real-valued gradient descriptors — a ring of pooled
+// orientation histograms (DAISY) and a log-polar GLOH-like grid (VGG, weight
+// free) — compared with the [L2Distance]. [SURF] additionally produces a
+// SURF-64 float descriptor from Haar wavelet responses on a 4×4 grid.
+//
+// [PCTSignatures] summarises an image as a variable-length set of weighted
+// Position-Color-Texture clusters ([SignaturePoint]); two signatures are compared
+// with the Signature Quadratic Form Distance [SQFD].
+//
+// # Matching
+//
+// [MatchBruteForceHamming] and [MatchBruteForceL2] produce nearest-neighbour
+// [DMatch] correspondences for binary and float descriptors. [MatchGMS] filters
+// such matches with Grid-based Motion Statistics (a match survives when its grid
+// neighbourhood is densely supported), and [LOGOSMatcher] filters them with local
+// geometric support derived from the keypoints' own scale and orientation.
+//
 // # Determinism
 //
 // Every function in this package is deterministic: identical input produces
-// identical output, with no randomness or reliance on map iteration order. This
-// makes the detectors and descriptors suitable for reproducible tests.
+// identical output. Descriptor sampling patterns that are "random" are generated
+// once from a fixed seed, and no algorithm relies on wall-clock time or map
+// iteration order. This makes the detectors and descriptors suitable for
+// reproducible tests.
+//
+// # Approximations
+//
+// Several descriptors here (BEBLID, TEBLID, BoostDesc, VGG) correspond to OpenCV
+// classes that ship large tables learned by boosting or discriminative
+// projection. To stay self-contained and free of embedded trained data, this
+// port keeps each algorithm's geometric/weak-learner form but replaces the
+// learned parameters with a fixed pseudo-random, weight-free configuration; the
+// per-symbol documentation notes this. Likewise [SURF] follows the SURF
+// principles with plain box filters rather than the patented reference code, and
+// [TBMR] realises the extremal-region stability criterion without OpenCV's
+// incremental max-tree. Exact keypoint and descriptor values therefore differ
+// from OpenCV while following the same principles.
 //
 // # Deferred
 //
-// The following opencv_contrib features are intentionally left out of this port:
-// SURF and SIFT (patent/complexity), FREAK, DAISY, LATCH, LUCID and VGG
-// descriptors, the affine-covariant detectors, and the learned BoostDesc/PCTSignatures
-// descriptors. The BRISK and AGAST implementations use a straightforward
-// self-contained sampling/scoring scheme rather than OpenCV's precompiled
-// decision trees, so their exact keypoint sets differ from OpenCV while following
-// the same principles.
+// SIFT and the affine-covariant detector adapters (AffineFeature2D) remain out of
+// scope, as does the trained (non-weight-free) form of the learned descriptors.
 package xfeatures2d

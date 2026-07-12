@@ -3,7 +3,10 @@
 // (github.com/malcolmston/opencv). It collects "extra" photo-processing
 // algorithms that sit alongside the mainline photo module: automatic white
 // balance, per-channel gain application, exemplar/shift-based inpainting, oil
-// painting stylization and BM3D denoising.
+// painting stylization and BM3D denoising. It also provides several classical
+// colour-constancy estimators (shades-of-gray, white-patch, gray-edge), gamma
+// correction, dark-channel-prior haze removal, frequency-selective
+// reconstruction (FSR) inpainting and Durand bilateral tone mapping.
 //
 // # Data model
 //
@@ -42,6 +45,28 @@
 // Deferred section for the honesty note on the trained regressor.
 // [ApplyChannelGains] multiplies the R, G and B channels by explicit gains.
 //
+// Each balancer also has an OpenCV-style factory ([CreateSimpleWB],
+// [CreateGrayworldWB], [CreateLearningBasedWB]) and getX/setX property
+// accessors, so code ported from the C++ API reads unchanged.
+//
+// Beyond those three, the package ports the classical colour-constancy family:
+// [ShadesOfGray] estimates the illuminant with a general Minkowski p-norm
+// (p == 1 is gray-world, p -> infinity is white-patch), [WhitePatchWB] is the
+// max-RGB special case, [GrayEdgeWB] applies the same norm to image gradients,
+// and [AutoWhiteBalance] is a tuning-free entry point using a moderate norm.
+//
+// # Other photo operations
+//
+// [GammaCorrection] applies a LUT-based power-law transfer function.
+// [Dehaze] / [DarkChannelDehazer] remove haze with He et al.'s dark channel
+// prior (atmospheric-light estimation, dark-channel transmission and an
+// edge-aware guided-filter refinement). [DctDenoising] denoises with sliding-
+// window DCT hard-thresholding. [Bm3dDenoisingTwoStep] and
+// [Bm3dDenoisingStep2] add BM3D's empirical-Wiener second stage. [InpaintFSR]
+// reconstructs masked regions by frequency-selective reconstruction.
+// [OilpaintingColorSpace] parametrises the oil-painting intensity source.
+// [TonemapDurand] performs bilateral-filter base/detail tone mapping.
+//
 // # Algorithms and fidelity
 //
 // The implementations favour clarity and correctness over raw speed and are
@@ -72,14 +97,18 @@
 //     .yml model file. This port has no trained model; it replaces the regressor
 //     with a self-contained robust estimator over the same colour/edge features.
 //     Its accuracy is therefore approximate, not identical to OpenCV's.
-//   - The second (Wiener) BM3D stage. OpenCV's BM3D runs a hard-threshold basic
-//     estimate followed by an empirical-Wiener refinement using the basic
-//     estimate as an oracle. This port implements only the basic estimate
-//     (BM3D_STEP1 / step-1-of-2), which is a valid, weaker denoiser.
 //   - The full SHIFTMAP EM optimisation. OpenCV's shift-map inpainting solves a
 //     global energy with a multi-scale expansion-move / EM scheme. This port
 //     uses a greedy onion-peel exemplar fill, which is local rather than
 //     globally optimal.
-//   - The FSR (Frequency-Selective Reconstruction) inpainting variant and the
-//     TonemapDurand / dct/bilateral image-quality bits of xphoto.
+//   - True high-dynamic-range input for [TonemapDurand]. OpenCV's Durand
+//     operator maps a floating-point HDR radiance map to LDR; this port operates
+//     on the package's 8-bit [cv.Mat], so it functions as a faithful local-
+//     contrast / detail-preserving operator over a low-dynamic-range proxy
+//     rather than a genuine HDR-to-LDR compressor.
+//   - [InpaintFSR] uses binary support weighting and a per-block DCT
+//     matching-pursuit model. OpenCV's FSR additionally applies an isotropic
+//     spatial weighting function and a residual-energy stopping rule; this port
+//     uses a fixed iteration budget per block, so it is faithful in structure
+//     but not bit-exact.
 package xphoto

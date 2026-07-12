@@ -55,13 +55,47 @@
 //     (connected blobs smaller than a threshold), a standard cleanup that both
 //     OpenCV matchers apply.
 //
+// # Full semi-global matching
+//
+// [StereoSGM] is the complete semi-global matcher. It goes beyond the four-path
+// [StereoSGBM] with:
+//
+//   - eight-path aggregation ([ModeHH]) adding the four diagonal directions, the
+//     equivalent of OpenCV's MODE_HH;
+//   - a selectable matching cost ([CostType]: SAD, SSD, mean-AD, or the
+//     illumination-robust census transform);
+//   - a Disp12MaxDiff left-right consistency check that rejects occlusions; and
+//   - equiangular parabola sub-pixel refinement ([StereoSGM.ComputeFloat],
+//     returning a float [DisparityF]).
+//
+// # Cost volumes and building blocks
+//
+//   - [MatchingCostVolume] and [CensusCostVolume] build a dense [CostVolume] that
+//     [CostVolume.WinnerTakeAll], [StereoSGM.Aggregate], [ComputeConfidence] and
+//     [RefineSubpixel] all consume.
+//   - [CensusTransform] and [HammingDistance64] provide the non-parametric census
+//     descriptor and its matching cost.
+//   - [SubpixelParabola] and [RefineSubpixel] add fractional-pixel precision to a
+//     winner-take-all disparity.
+//   - [ComputeConfidence] scores each pixel by its cost peak ratio.
+//
+// # Block matching and post-processing
+//
+//   - [BlockMatcher] is the full local matcher: intensity pre-filtering
+//     ([ApplyXSobelPrefilter], [ApplyNormalizedPrefilter] via [PrefilterType]),
+//     texture and uniqueness rejection, speckle removal, and a left-right check.
+//   - [ValidateDisparity] enforces left-right consistency between a left- and a
+//     right-referenced map; [GetValidDisparityROI] reports the reliably matchable
+//     rectangle.
+//   - [DisparityWLSFilter] is an edge-aware weighted-least-squares post-filter
+//     that smooths and hole-fills a disparity map using a guidance image.
+//   - [QuasiDenseStereo] grows a dense map from correlation seeds by best-first
+//     propagation.
+//
 // # Deferred
 //
 // The following are intentionally out of scope for this port:
 //
-//   - Full 8-path SGM aggregation (adding the four diagonal paths), sub-pixel
-//     disparity interpolation, and the complete OpenCV penalty schedule
-//     (mode HH, disp12MaxDiff left-right consistency, pre-filter cap).
 //   - StereoBeliefPropagation and StereoConstantSpaceBP.
 //   - GPU / CUDA acceleration.
 //   - True calibration-driven rectification ([Rectify] is a stub).

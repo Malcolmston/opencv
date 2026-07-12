@@ -53,3 +53,57 @@ func ExamplePhaseCorrelate() {
 	fmt.Printf("shift = (%.0f, %.0f)\n", shift.X, shift.Y)
 	// Output: shift = (3, 2)
 }
+
+// ExampleGetGaussianKernel returns the exact small-aperture Gaussian OpenCV
+// uses when no sigma is supplied.
+func ExampleGetGaussianKernel() {
+	k := imgprocx.GetGaussianKernel(3, 0)
+	fmt.Println(k)
+	// Output: [0.25 0.5 0.25]
+}
+
+// ExampleGetDerivKernels shows the separable Sobel factors for a first
+// derivative in x with a 3x3 aperture.
+func ExampleGetDerivKernels() {
+	kx, ky := imgprocx.GetDerivKernels(1, 0, 3, false)
+	fmt.Println(kx, ky)
+	// Output: [-1 0 1] [1 2 1]
+}
+
+// ExampleEMD computes the Earth Mover's Distance between two 1-D distributions
+// with a |i-j| ground metric.
+func ExampleEMD() {
+	d := imgprocx.EMD(
+		[]float64{0.4, 0.6},
+		[]float64{0.5, 0.5},
+		[][]float64{{0, 1}, {1, 0}},
+	)
+	fmt.Printf("%.1f\n", d)
+	// Output: 0.1
+}
+
+// ExampleFloodFill fills the connected same-valued region around a seed and
+// reports how many pixels it painted.
+func ExampleFloodFill() {
+	m := cv.NewMat(2, 4, 1)
+	for x := 0; x < 4; x++ {
+		v := uint8(10)
+		if x >= 2 {
+			v = 200
+		}
+		m.Set(0, x, 0, v)
+		m.Set(1, x, 0, v)
+	}
+	area, rect := imgprocx.FloodFill(m, cv.Point{X: 0, Y: 0}, cv.Scalar{99},
+		&imgprocx.FloodFillOptions{FixedRange: true})
+	fmt.Printf("area=%d rect=%dx%d\n", area, rect.Width, rect.Height)
+	// Output: area=4 rect=2x2
+}
+
+// ExampleCreateHanningWindow builds a small raised-cosine window; its border is
+// zero and its centre is one.
+func ExampleCreateHanningWindow() {
+	w := imgprocx.CreateHanningWindow(5, 5)
+	fmt.Printf("corner=%.0f centre=%.0f\n", w.At(0, 0), w.At(2, 2))
+	// Output: corner=0 centre=1
+}

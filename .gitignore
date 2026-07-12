@@ -1,3 +1,22 @@
-/example_*.png
+# Binaries
+opencv
+example
+*.exe
+*.o
 *.out
+
+# Generated example images
+/example_*.png
+
+# Test cache / coverage
+*.test
+*.prof
+coverage.out
 coverage.txt
+
+# IDE
+.idea/
+.vscode/
+
+# Module cache
+vendor/

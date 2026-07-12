@@ -235,13 +235,12 @@ func FromImage(img image.Image) *Mat {
 	if w <= 0 || h <= 0 {
 		panic("cv: FromImage given an empty image")
 	}
-	switch img.(type) {
+	switch img := img.(type) {
 	case *image.Gray:
-		g := img.(*image.Gray)
 		m := NewMat(h, w, 1)
 		for y := 0; y < h; y++ {
 			for x := 0; x < w; x++ {
-				m.Data[y*w+x] = g.GrayAt(b.Min.X+x, b.Min.Y+y).Y
+				m.Data[y*w+x] = img.GrayAt(b.Min.X+x, b.Min.Y+y).Y
 			}
 		}
 		return m

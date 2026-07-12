@@ -201,12 +201,7 @@ func TestToneMappingCompressesRangeAddsLowEndDetail(t *testing.T) {
 	if outMean <= inMean {
 		t.Errorf("tone mapping did not lift the shadows: outMean=%.2f inMean=%.2f", outMean, inMean)
 	}
-	// Output must stay in the displayable range.
-	for _, v := range out.Data {
-		if v > 255 { // uint8 cannot exceed 255, but assert intent explicitly
-			t.Fatalf("output sample %d out of range", v)
-		}
-	}
+	// out.Data is []uint8, so samples are inherently within [0,255].
 	// Highlights must not have collapsed to a single saturated value.
 	_, brightVar := regionMeanVar(of, y0, y1, darkEnd+2, cols-2)
 	if brightVar == 0 {

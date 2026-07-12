@@ -80,7 +80,8 @@ func PeiLinNormalization(img *cv.Mat) Affine {
 
 	// Eigen-decomposition of the symmetric covariance [[mu20,mu11],[mu11,mu02]].
 	theta := 0.5 * math.Atan2(2*mu11, mu20-mu02)
-	common := math.Sqrt(math.Pow((mu20-mu02)/2, 2) + mu11*mu11)
+	half := (mu20 - mu02) / 2
+	common := math.Sqrt(half*half + mu11*mu11)
 	l1 := (mu20+mu02)/2 + common
 	l2 := (mu20+mu02)/2 - common
 	if l1 <= 0 {

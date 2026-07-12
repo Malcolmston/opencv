@@ -41,7 +41,9 @@ func TestDictionaryProperties(t *testing.T) {
 		}
 	}
 	// The cache returns the same pointer on repeated calls.
-	if aruco.GetPredefinedDictionary(aruco.Dict4x4) != aruco.GetPredefinedDictionary(aruco.Dict4x4) {
+	d1 := aruco.GetPredefinedDictionary(aruco.Dict4x4)
+	d2 := aruco.GetPredefinedDictionary(aruco.Dict4x4)
+	if d1 != d2 {
 		t.Error("GetPredefinedDictionary should cache and return the same pointer")
 	}
 }

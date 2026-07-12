@@ -60,23 +60,6 @@ func (f *FlowField) set(y, x int, u, v float64) {
 	f.Data[i+1] = v
 }
 
-// atClamp returns the displacement at (y, x), clamping out-of-range coordinates
-// to the nearest edge (BORDER_REPLICATE).
-func (f *FlowField) atClamp(y, x int) (u, v float64) {
-	if y < 0 {
-		y = 0
-	} else if y >= f.Rows {
-		y = f.Rows - 1
-	}
-	if x < 0 {
-		x = 0
-	} else if x >= f.Cols {
-		x = f.Cols - 1
-	}
-	i := (y*f.Cols + x) * 2
-	return f.Data[i], f.Data[i+1]
-}
-
 // Clone returns a deep copy of the field with its own backing storage.
 func (f *FlowField) Clone() *FlowField {
 	out := NewFlowField(f.Rows, f.Cols)

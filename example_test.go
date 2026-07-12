@@ -14,7 +14,7 @@ func ExampleCvtColor() {
 func ExampleThreshold() {
 	m := grayLine(10, 100, 200)
 	out, used := Threshold(m, 120, 255, ThreshBinary)
-	fmt.Println(out.Data, int(used))
+	fmt.Printf("%v %d\n", out.Data, int(used))
 	// Output: [0 0 255] 120
 }
 

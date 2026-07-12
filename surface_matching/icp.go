@@ -85,8 +85,6 @@ func (icp *ICP) Register(model, scene *PointCloud, init Pose3D) (Pose3D, float64
 		useSrc, useDst := working, matched
 		if icp.RejectionScale > 0 && len(working) > 4 {
 			thresh := medianSqThreshold(dists, icp.RejectionScale)
-			useSrc = useSrc[:0:0]
-			useDst = useDst[:0:0]
 			us := make([]Vec3, 0, len(working))
 			ud := make([]Vec3, 0, len(working))
 			for i := range working {

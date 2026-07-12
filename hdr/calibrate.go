@@ -190,7 +190,6 @@ func solveDebevecChannel(images []*cv.Mat, logTimes []float64, pixels []int, c i
 	}
 	// Fix the curve at the middle of the range: g(127) = 0.
 	a[row][127] = 1
-	row++
 
 	x := solveLeastSquares(a, b, nUnknown)
 	g := make([]float64, 256)

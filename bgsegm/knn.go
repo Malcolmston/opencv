@@ -46,7 +46,6 @@ type BackgroundSubtractorKNN struct {
 	samples    [][]float64
 	frameCount int
 	slot       int
-	accum      float64
 	inited     bool
 }
 

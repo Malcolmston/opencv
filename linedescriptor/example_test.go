@@ -61,10 +61,9 @@ func ExampleBinaryDescriptorMatcher_Match() {
 // ExampleDrawKeylines renders detected segments onto a colour canvas.
 func ExampleDrawKeylines() {
 	img := cv.NewMat(60, 60, 1)
-	lines := []linedescriptor.KeyLine{}
 	det := linedescriptor.NewLSDDetector()
 	cv.Line(img, cv.Point{X: 10, Y: 30}, cv.Point{X: 50, Y: 30}, cv.NewScalar(255), 3)
-	lines = det.Detect(img)
+	lines := det.Detect(img)
 
 	out := linedescriptor.DrawKeylines(img, lines, cv.NewScalar(255, 0, 0), 1)
 	fmt.Println(out.Rows, out.Cols, out.Channels)

@@ -72,10 +72,6 @@ func TestApplyChannelGainsExact(t *testing.T) {
 			}
 		}
 	}
-	// Input must be untouched.
-	if src.Data[3] == out.Data[3] && gains[0] != 1 {
-		// not a strict check; just ensure a new buffer was returned
-	}
 	if &src.Data[0] == &out.Data[0] {
 		t.Fatal("ApplyChannelGains must not alias the input buffer")
 	}

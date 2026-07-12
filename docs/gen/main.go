@@ -101,7 +101,7 @@ func (p pkgInfo) Synopsis() string {
 	if p.Doc == nil {
 		return ""
 	}
-	return doc.Synopsis(p.Doc.Doc)
+	return p.Doc.Synopsis(p.Doc.Doc)
 }
 
 // Name returns the package's Go name.

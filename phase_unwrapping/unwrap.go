@@ -186,8 +186,7 @@ func (h *HistogramPhaseUnwrapping) unwrap(phase []float64, rows, cols int) []flo
 		members[i] = []int{i}
 	}
 
-	var find func(x int) int
-	find = func(x int) int {
+	find := func(x int) int {
 		for parent[x] != x {
 			parent[x] = parent[parent[x]]
 			x = parent[x]

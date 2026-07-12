@@ -37,14 +37,48 @@
 // row indices. The exact mapping is documented on [Plot2D.Render] and is
 // deterministic, which makes rendered charts straightforward to test.
 //
+// [Plot2D.RenderAnnotated] renders a Plot2D and overlays an [Annotation]: a
+// centred title, x/y axis labels, numeric tick marks and an optional in-plot
+// legend, all painted into the reserved margins.
+//
+// # Additional chart types
+//
+// Beyond [Plot2D], the package offers specialised renderers, each constructed
+// with its own New* function, tuned with chainable Set* methods and drawn with
+// Render onto a fresh three-channel [cv.Mat]:
+//
+//   - [StemPlot] — a stem (lollipop) chart of vertical stems capped by markers;
+//   - [StepPlot] — a staircase line chart;
+//   - [AreaPlot] — a filled area between the curve and the baseline;
+//   - [BoxPlot] — box-and-whisker summaries (quartiles, Tukey whiskers,
+//     outliers) for one or more groups;
+//   - [ViolinPlot] — mirrored kernel-density silhouettes per group;
+//   - [ErrorBarPlot] — points with symmetric vertical error bars;
+//   - [PiePlot] — a pie chart with proportional wedges and a legend;
+//   - [MultiSeriesPlot] — several [Series] overlaid on shared axes with a legend;
+//   - [HeatmapPlot] — a 2-D scalar field as a false-colour grid with an optional
+//     [Colorbar]-style colour scale;
+//   - [ContourPlot] — marching-squares iso-value contour lines of a field;
+//   - [Colorbar] — a standalone vertical or horizontal colour scale.
+//
+// Shared helpers [TextSize], [TextHeight], [DrawLegend] and the [LegendEntry]
+// type support titles, labels and legends built on [cv.PutText].
+//
 // # Colormaps
 //
-// [ApplyColorMap] recolours a single-channel image through one of the built-in
-// [Colormap] tables (JET, HOT, COOL, BONE, HSV, VIRIDIS, PLASMA and GRAYSCALE),
-// returning a three-channel image. [ApplyCustomColorMap] does the same with a
-// caller-supplied 256-entry table, [ColormapTable] exposes the built-in tables,
-// and [LUT] applies an arbitrary per-sample lookup table to an image of any
-// channel count, mirroring cv2.LUT.
+// [ApplyColorMap] recolours a single-channel image through one of the original
+// built-in [Colormap] tables (JET, HOT, COOL, BONE, HSV, VIRIDIS, PLASMA and
+// GRAYSCALE), returning a three-channel image. [ApplyCustomColorMap] does the
+// same with a caller-supplied 256-entry table, [ColormapTable] exposes those
+// original tables, and [LUT] applies an arbitrary per-sample lookup table to an
+// image of any channel count, mirroring cv2.LUT.
+//
+// The additional OpenCV COLORMAP_* tables — [ColormapAutumn], [ColormapWinter],
+// [ColormapSummer], [ColormapSpring], [ColormapOcean], [ColormapRainbow],
+// [ColormapPink], [ColormapParula], [ColormapMagma], [ColormapInferno],
+// [ColormapCividis], [ColormapTwilight] and [ColormapTurbo] — round out the set.
+// Use [Table] to obtain the 256-entry lookup table for any colormap (original or
+// additional) and [Colorize] to apply any of them to a single-channel image.
 //
 // # Colour convention
 //

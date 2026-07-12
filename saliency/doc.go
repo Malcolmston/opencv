@@ -28,9 +28,43 @@
 //     differences are gathered over several octave scales with summed-area
 //     tables and averaged, filling the interior of sizeable salient regions
 //     rather than only their edges.
+//   - [StaticSaliencyIttiKochNiebur] — the classical bottom-up attention model
+//     of Itti, Koch & Niebur (1998): center-surround contrast on Gaussian
+//     pyramids of intensity, colour double-opponency and orientation, combined
+//     through the N(·) map-promotion operator.
+//   - [MinimumBarrierSaliency] — the Minimum Barrier Distance detector of Zhang
+//     et al. (ICCV 2015). Saliency is the barrier distance (path max minus min
+//     intensity) from each pixel to the image border, computed with fast
+//     alternating raster scans.
+//   - [StaticSaliencyFrequencyTuned] — the frequency-tuned method of Achanta et
+//     al. (CVPR 2009): the Lab distance between a lightly blurred pixel and the
+//     whole-image mean colour.
+//   - [StaticSaliencyContextAware] — the context-aware detector of Goferman et
+//     al. (CVPR 2010), scoring each pixel by its colour dissimilarity to its
+//     most similar (position-discounted) context.
+//   - [GMRSaliency] — the graph-based manifold-ranking detector of Yang et al.
+//     (CVPR 2013): a two-stage ranking of super-pixel regions against the image
+//     borders and then against foreground queries.
+//   - [StaticSaliencyBooleanMap] — Boolean Map Saliency (BMS) of Zhang &
+//     Sclaroff (ICCV 2013), activating the surrounded (border-disconnected)
+//     regions of many thresholded Boolean maps.
+//   - [HistogramContrast] (HC) and [RegionContrast] (RC) — the global-contrast
+//     detectors of Cheng et al. (CVPR 2011): colour-histogram contrast and
+//     spatially-weighted region contrast in Lab space.
 //
 // [ComputeBinaryMap] turns any such saliency map into a binary foreground mask
-// with Otsu thresholding, isolating the salient region.
+// with Otsu thresholding; [AdaptiveBinaryMap] instead thresholds at a multiple
+// of the map mean (Achanta's adaptive threshold). [SaliencyToHeatmap] renders a
+// map as a jet-coloured image, and [CenterBiasPrior]/[ApplyCenterBias] model
+// the human centre-fixation bias.
+//
+// # Evaluation
+//
+// The standard saliency-benchmark metrics compare a predicted map against a
+// human-fixation record or another map: [AUCJudd] (area under the ROC),
+// [NSS] (normalized scanpath saliency), [CC] (linear correlation), [SIM]
+// (histogram-intersection similarity) and [KLDiv] (Kullback-Leibler
+// divergence).
 //
 // # Motion saliency
 //
@@ -47,6 +81,10 @@
 //     but scores sliding windows with a fixed boundary-contrast heuristic
 //     instead of a learned linear model, returning ranked candidate boxes
 //     ([ObjectnessBox]) without any training data.
+//   - [ObjectnessCascade] — a two-stage proposer in the spirit of the BING
+//     cascade: a fast normed-gradient first stage, a richer second stage that
+//     re-scores survivors with saliency coverage, boundary contrast and a size
+//     prior, followed by non-maximum suppression of overlapping boxes.
 //
 // # Determinism
 //
@@ -57,13 +95,15 @@
 // # Relationship to OpenCV and deferred features
 //
 // The algorithms follow their OpenCV counterparts closely enough to exhibit the
-// same qualitative behaviour, but two capabilities that depend on trained model
-// data are intentionally out of scope:
+// same qualitative behaviour. Several detectors substitute regular grid regions
+// for a learned colour segmentation or SLIC super-pixels ([GMRSaliency],
+// [RegionContrast]) and solve their linear systems iteratively; these
+// approximations are documented on each type. The one capability that depends
+// on trained model data is intentionally out of scope:
 //
-//   - trained deep-learning saliency models (e.g. DeepGaze-style networks); and
-//   - the full BING detector with its offline-learned normed-gradient weights
-//     and two-stage cascade.
+//   - trained deep-learning saliency models (e.g. DeepGaze-style networks), and
+//     the offline-learned linear weights of the full BING detector.
 //
-// [ObjectnessBING] therefore returns heuristic objectness cues rather than the
-// calibrated scores of the trained detector.
+// [ObjectnessBING] and [ObjectnessCascade] therefore return heuristic
+// objectness cues rather than the calibrated scores of the trained detector.
 package saliency

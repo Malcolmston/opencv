@@ -26,7 +26,29 @@
 //     small two-channel float type is used here instead).
 //   - [KalmanFilter] — a classic linear Kalman filter with the standard
 //     Predict / Correct cycle, useful for smoothing and predicting the state of
-//     a tracked object.
+//     a tracked object. It also supports an external control input through
+//     [KalmanFilter.PredictControl] plus validated matrix setters
+//     ([KalmanFilter.SetTransitionMatrix] and friends).
+//   - [CalcOpticalFlowPyrLKF] — the sub-pixel (floating-point [PointF]) variant
+//     of the pyramidal Lucas-Kanade tracker, and [CalcOpticalFlowFarnebackSubpixel],
+//     a parabola-refined sub-pixel version of the dense block-matching flow.
+//   - [DISOpticalFlow] — dense optical flow by coarse-to-fine patch-based
+//     inverse search with confidence-weighted densification (Dense Inverse
+//     Search).
+//   - [FindTransformECC] — image alignment by Enhanced Correlation Coefficient
+//     maximisation for the translation, euclidean, affine and homography motion
+//     models ([MotionType]).
+//   - [MeanShift] and [CamShift] — mode-seeking trackers over a probability /
+//     back-projection image, with CamShift also returning the object's size and
+//     orientation as a [cv.RotatedRect].
+//   - [TrackerFeaturePyrLK] — a stateful sparse feature tracker built on the
+//     pyramidal Lucas-Kanade flow.
+//   - [EstimateAffinePartial2D] — closed-form least-squares similarity
+//     (scale + rotation + translation) estimation from point correspondences.
+//   - [VideoStabilizer] — a causal digital stabilizer combining grid-feature
+//     motion estimation, cumulative-trajectory smoothing and compensating warps.
+//   - [BackgroundSubtractorMOG2] and [BackgroundSubtractorKNN] — adaptive
+//     per-pixel background models producing binary foreground masks.
 //
 // # Coordinate and intensity conventions
 //
@@ -46,11 +68,13 @@
 //
 // # Deferred / out of scope
 //
-// The following OpenCV video features are intentionally not implemented:
-// background subtraction (MOG2/KNN), the TVL1 and dual-TVL1 dense flow solvers,
-// the DIS optical-flow algorithm, higher-order motion models (affine/homography
-// tracking), the extended and unscented Kalman variants, and the CamShift /
-// meanShift trackers. [CalcOpticalFlowFarneback] approximates the dense flow
-// with integer block matching rather than the true polynomial expansion, so it
-// yields integer-valued displacements and is intended for small motions.
+// The following OpenCV video features are intentionally not implemented: the
+// TVL1 and dual-TVL1 dense flow solvers, the variational-refinement stage of DIS
+// (the patch inverse search and densification are implemented; the final
+// variational smoothing pass is not), and the extended and unscented Kalman
+// variants. [CalcOpticalFlowFarneback] approximates the dense flow with integer
+// block matching rather than the true polynomial expansion, so it yields
+// integer-valued displacements and is intended for small motions; use
+// [CalcOpticalFlowFarnebackSubpixel] or [DISOpticalFlow] when sub-pixel dense
+// flow is required.
 package video

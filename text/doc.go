@@ -13,22 +13,44 @@
 //
 // A detection pipeline has three stages, each backed by a function or type here:
 //
-//   - Region proposal. [DetectRegionsMSER] (and the richer [MSERRegions])
-//     extract Maximally Stable Extremal Regions — connected components of the
-//     image's intensity level sets whose area stays nearly constant across a
-//     range of thresholds. Characters, being roughly uniform blobs that contrast
-//     with their background, are classic MSERs.
-//   - Region filtering. [ERFilter] discards regions that are unlikely to be
-//     characters using cheap shape heuristics (area, aspect ratio and fill
-//     ratio), a stand-in for OpenCV's trained Extremal Region classifier.
-//   - Grouping. [GroupTextRegions] clusters the surviving character boxes into
-//     text lines using geometric heuristics: similar height, horizontal
-//     alignment and bounded spacing.
+//   - Region proposal. [DetectRegionsMSER] (and the richer [MSERRegions],
+//     [MSERRegionsWithParams] with min-diversity pruning) extract Maximally
+//     Stable Extremal Regions — connected components of the image's intensity
+//     level sets whose area stays nearly constant across a range of thresholds.
+//     Characters, being roughly uniform blobs that contrast with their
+//     background, are classic MSERs.
+//   - Region filtering. [ERFilter] applies quick shape heuristics; the two-stage
+//     [ERFilterNM1]/[ERFilterNM2] classifier reproduces the Neumann–Matas
+//     Extremal Region cascade over the full [ERFeatures] descriptor (aspect,
+//     compactness, hole topology, convexity and stroke-width constancy), with
+//     documented thresholds standing in for the trained AdaBoost weights.
+//   - Grouping. [GroupTextRegions] and [ERGrouping] cluster the surviving
+//     character boxes into text lines by geometric linkage (horizontal or
+//     slope-tolerant); [ERGroupingBBox] offers a fast bounding-box-only variant.
+//
+// [DetectRegions] and [DetectTextLines] wire the whole pipeline together, from
+// MSER proposal through both filter stages to grouped text-line boxes, controlled
+// by [TextDetectorParams].
+//
+// # Stroke Width Transform
+//
+// [TextDetectorSWT] and the underlying [StrokeWidthTransform] provide an
+// independent detector based on stroke-width constancy (Epshtein–Ofek–Wexler),
+// finding connected components whose stroke thickness is nearly uniform.
+//
+// # Recognition
+//
+// A built-in 5x7 bitmap font ([RenderText], [FontGlyph], [SupportedChars]) backs
+// a nearest-template recognizer, [OCRTemplate] (digits, or the full alphanumeric
+// set), with per-character [SegmentChars] segmentation and [SegmentLines] line
+// splitting driven by projection profiles ([ProjectionProfile]). [OCRTemplate]
+// can also emit per-character score matrices for the lexicon-constrained
+// [BeamSearchDecoder], a beam-search word decoder over a [Lexicon].
 //
 // [ComputeNMChannels] reproduces the channel decomposition that OpenCV's
 // Neumann–Matas detector runs its extremal-region search over, and
-// [NearestGlyphClassifier] is a trivial nearest-template recognizer useful for
-// tests and simple fixed-font digit reading.
+// [NearestGlyphClassifier] is the trivial nearest-template matcher [OCRTemplate]
+// is built on.
 //
 // # Types
 //
@@ -52,8 +74,11 @@
 //
 // # Deferred
 //
-// Recognition proper — OCR with a trained OCRHMMDecoder/OCRTesseract-style model
-// or a CNN word recognizer — is out of scope and deferred. The trained AdaBoost
-// Extremal Region classifiers (ERFilter's NM1/NM2 stages) are approximated by
-// the heuristic [ERFilter] rather than ported with their learned weights.
+// Trained-model recognition — a real OCRHMMDecoder/OCRTesseract language model or
+// a CNN word recognizer — remains out of scope: [OCRTemplate] reads only the
+// fixed built-in font, not arbitrary scene text. The Extremal Region classifier
+// stages [ERFilterNM1] and [ERFilterNM2] compute the genuine Neumann–Matas
+// features but decide with documented thresholds rather than the original trained
+// AdaBoost weights, and [ERGrouping] uses geometric linkage in place of the
+// learned pair/triplet classifier.
 package text

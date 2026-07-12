@@ -20,6 +20,45 @@
 // linear-RGB<->CIE XYZ (sRGB primaries), XYZ<->CIE L*a*b* under the D65 white
 // point, and the CIE76 Delta E metric. See color.go.
 //
+// # Color science
+//
+// Beyond the CIE76 basics, the package provides a fuller color-difference and
+// color-space toolkit:
+//
+//   - Delta E metrics: [DeltaE94] and [DeltaE94Textiles] (CIE94), [DeltaE2000]
+//     and [DeltaE2000Weighted] (CIEDE2000, matching the Sharma et al. reference
+//     data), and [DeltaECMC] with the [DeltaECMCAcceptability] (2:1) and
+//     [DeltaECMCPerceptibility] (1:1) presets. [DeltaE2000RGB] wraps sRGB inputs.
+//   - Color spaces: [LabToLCh]/[LChToLab] (cylindrical Lab), [XYZToxyY]/[XYYToXYZ]
+//     (chromaticity), white-point-parameterised [XYZToLab]/[LabToXYZ],
+//     [LinearRGBToXYZ], [XYZToRGB], [LabToRGB], and the pure power-law
+//     [GammaExpand]/[GammaCompress].
+//   - Chromatic adaptation: [ChromaticAdaptation] and [AdaptationMatrix] between
+//     the [WhiteD65], [WhiteD50] and [WhiteA] illuminants using the [Bradford],
+//     [VonKries] or [XYZScaling] cone-response models, with [ApplyMatrix3] for
+//     applying a 3x3 transform.
+//
+// # ColorChecker Digital SG
+//
+// [DigitalSGReference] provides the 140-patch (10-row by 14-column) ColorChecker
+// Digital SG chart, with [DigitalSGReferenceRGB]/[DigitalSGReferenceLab] and the
+// [DigitalSGRows]/[DigitalSGCols]/[DigitalSGNumPatches] geometry accessors.
+// [RenderSGChart] draws it, [DigitalSGOuterQuad] gives the outer corners, and
+// [SampleSGWithHint] samples a [CCheckerSG] from a known quad, reporting error
+// against the reference just like [CChecker].
+//
+// # Richer color correction
+//
+// [ColorCorrectionModel] (built with [TrainColorCorrection]) extends [CCM] with
+// full 2nd- and 3rd-degree polynomials ([ModelPoly2], [ModelPoly3]) and
+// exposure-invariant Finlayson root-polynomials ([ModelRootPoly2],
+// [ModelRootPoly3]), optional [LinIdentity]/[LinSRGB]/[LinGamma] linearization,
+// white-balance-first fitting and weighted least squares (see [LuminanceWeights]).
+// [ColorCorrectionModel.Infer] color-corrects an image with clamping,
+// [ColorCorrectionModel.MeanDeltaE2000] scores it, and
+// [ColorCorrectionModel.Report] gives a per-patch Lab and Delta E breakdown.
+// [DetectorParameters] bundles and validates the detector's tuning knobs.
+//
 // # Reference charts
 //
 // [CheckerType] enumerates the supported charts. [Macbeth24] is the classic
@@ -89,14 +128,17 @@
 //
 //   - No trained or machine-learning-based detector (OpenCV's mcc ships an
 //     optional DNN net-based CCheckerDetector); detection here is purely
-//     classical contour/geometry.
-//   - No 140-patch ColorChecker Digital SG or 18-patch Passport geometry and
-//     reference tables; only the 24-patch layout is provided as real data (two
-//     tabulations: [Macbeth24] and [Vinyl]).
-//   - Delta E is CIE76 only; CIE94, CIEDE2000 and CMC are not implemented.
-//   - The CCM covers 3x3, 3x4 and a fixed degree-2 polynomial; arbitrary
-//     polynomial degrees, root-polynomial models, per-channel weighting, robust
-//     (saturation-masked) fitting and iterative refinement are not included.
+//     classical contour/geometry. The 140-patch DigitalSG is sampled from a
+//     supplied quad ([SampleSGWithHint]) rather than searched for automatically.
+//   - The 18-patch ColorChecker Passport geometry and reference table is not
+//     provided (the 24-patch [Macbeth24]/[Vinyl] and 140-patch DigitalSG charts
+//     are).
+//   - The DigitalSG reference reproduces the real 10x14 geometry with the
+//     classic 24 patches anchored to [Macbeth24] and a deterministic Lab sweep
+//     for the remaining cells; it is not a substitute for a factory-measured SG
+//     chart's tabulated values.
 //   - No networked or on-disk chart databases, camera profiles or ICC output.
-//   - Chromatic-adaptation white points other than D65 are not supported.
+//   - The correction models are fitted by (weighted) least squares; robust
+//     (saturation-masked) outlier rejection and iterative refinement are not
+//     included.
 package mcc

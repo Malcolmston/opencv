@@ -28,6 +28,32 @@
 //   - [VoxelDownsample] reduces a point cloud by averaging the points that fall
 //     into each cell of a regular voxel grid.
 //
+// Building on those primitives, the package also provides the registration,
+// odometry and volumetric-fusion routines that make up the rest of OpenCV's
+// rgbd module:
+//
+//   - [Pose] is the rigid-transform type shared by the routines below, with
+//     [Rodrigues] / [InverseRodrigues] converting to and from the axis-angle
+//     (rotation-vector) representation.
+//   - [ICPPointToPlane] aligns two clouds with the point-to-plane metric, and
+//     [ColoredICP] additionally uses per-point colour to break geometric
+//     ambiguity.
+//   - [RgbdNormals] estimates per-pixel normals by the FALS, LINE-MOD or SRI
+//     method ([NewRgbdNormals]).
+//   - [DepthCleaner] fills holes and despeckles a depth map, while
+//     [BilateralDepthFilter] applies edge-preserving smoothing and
+//     [RescaleDepth] converts depth units.
+//   - [ICPOdometry], [RgbdOdometry] and [RgbdICPOdometry] recover frame-to-frame
+//     camera motion from depth (geometric), intensity (photometric) or both,
+//     configured by [OdometryOptions] and reported as an [OdometryResult].
+//   - [WarpFrame] re-renders an intensity image and depth from a new pose, and
+//     [DepthTo3dSparse] back-projects a chosen set of pixels.
+//   - [RegisterDepthDistorted] extends [RegisterDepth] with a Brown–Conrady lens
+//     distortion model for the colour camera.
+//   - [TSDFVolume] is a lightweight KinectFusion-style truncated signed distance
+//     volume with [TSDFVolume.Integrate], [TSDFVolume.Raycast] and
+//     [TSDFVolume.FetchPointCloud].
+//
 // # Conventions
 //
 // Depth maps are single-channel [github.com/malcolmston/opencv.FloatMat]
@@ -58,14 +84,17 @@
 //
 // All routines are deterministic. The RANSAC sampling in [PlaneSegmentation]
 // draws from a fixed-seed generator so repeated calls on the same input return
-// identical planes and labels.
+// identical planes and labels; every other routine is a fixed numerical
+// computation with no randomness.
 //
 // # Deferred
 //
 // The following rgbd features from OpenCV are intentionally not implemented
 // here:
 //
-//   - KinectFusion / TSDF volumetric integration (the Volume, Kinfu APIs).
-//   - Colored ICP and other photometric point-cloud registration.
-//   - RGBD odometry (RgbdOdometry, ICPOdometry, RgbdNormals-based tracking).
+//   - The full KinectFusion pipeline with camera tracking and a hash- or
+//     octree-backed large-scale volume; [TSDFVolume] covers integration,
+//     raycasting and point extraction on a dense grid but not pose tracking.
+//   - Colour and semantic fusion into the volume (only a scalar TSDF is stored).
+//   - The Large-Scale-Direct-monocular and dynamic-fusion variants.
 package rgbd

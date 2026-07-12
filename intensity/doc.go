@@ -33,6 +33,10 @@
 //     intensity levels.
 //   - [Invert] — photographic negative, s = 255 − r.
 //
+// The 256-entry tables that drive these maps can also be built directly and
+// reused: [GammaLUT] and [ToneCurveLUT] return tables that [ApplyLUT] applies to
+// any image.
+//
 // # Global (data-dependent) transforms
 //
 //   - [AutoscaleContrast] — per-channel min–max normalisation that stretches
@@ -41,12 +45,48 @@
 //   - [HistogramMatching] — histogram specification: remaps an image so that
 //     its cumulative distribution approximates that of a reference image, per
 //     channel.
+//   - [AutoContrast] — per-channel percentile stretch (PIL's autocontrast): clip
+//     a fraction of each channel's tails, then stretch to the full range.
+//   - [AutoLevels] — luminance-driven black/white-point stretch applied to every
+//     channel, so contrast is expanded without shifting colour balance.
+//   - [ContrastLimitedStretch] — a percentile stretch whose gain is capped, so a
+//     nearly flat image is not amplified into noise.
+//
+// # Adaptive tone and gamma
+//
+//   - [AutoGamma] / [AutoGammaValue] — an automatic power-law whose exponent is
+//     chosen from the image mean so the mid-tone is driven toward 0.5.
+//   - [AGCWD] — Adaptive Gamma Correction with Weighting Distribution (Huang et
+//     al. 2013): a per-intensity exponent from a reshaped histogram.
+//   - [ToneCurve] / [ToneCurveLUT] — a photo-editor "curves" adjustment fitting a
+//     natural cubic spline through control points ([CurvePoint]).
+//   - [LogAdaptiveTonemap] — the adaptive logarithmic operator of Drago et al.
+//     (2003): lifts shadows and compresses highlights.
+//
+// # Retinex
+//
+//   - [SingleScaleRetinex] / [MultiScaleRetinex] / [MSRCR] — the retinex family
+//     (Jobson et al. 1997), discounting the illumination via a log-domain
+//     Gaussian surround, with optional multi-scale fusion and colour
+//     restoration. [DefaultRetinexScales] supplies the classic scale set.
+//
+// # Local (spatial) operators
+//
+//   - [UnsharpMask] — high-pass sharpening with an optional threshold.
+//   - [DodgeAndBurn] — a surround-guided local exposure adjustment that lightens
+//     shadows and darkens highlights to even out illumination.
+//   - [CLAHEColor] — colour Contrast-Limited Adaptive Histogram Equalisation,
+//     applying luminance CLAHE while preserving hue.
 //
 // # Tone mapping
 //
 //   - [BIMEF] — a Bio-Inspired Multi-Exposure Fusion pipeline for low-light
 //     enhancement, after Ying et al. (2017). See the [BIMEF] documentation for
 //     the approximation used and what is deferred.
+//   - [BIMEFRefined] / [BIMEFWithParams] — the fully realised BIMEF pipeline
+//     ([BIMEFParams], [DefaultBIMEFParams]): an edge-preserving
+//     weighted-least-squares illumination map and an entropy-maximising exposure
+//     ratio, the refinements [BIMEF] defers.
 //
 // # Conventions
 //

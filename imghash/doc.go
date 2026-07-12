@@ -53,7 +53,45 @@
 //     compared by L1.
 //   - [ColorMomentHash], via [ColorMoment] — the seven Hu moment invariants of
 //     the R, G, B, H, S and V planes, a 42-dimensional real-valued descriptor
-//     stored as 336 bytes and compared by L1.
+//     stored as 336 bytes and compared by L1. [ColorMomentL2Hash], via
+//     [ColorMomentL2], computes the same 42-float descriptor but compares it by
+//     the Euclidean (L2) distance, matching OpenCV's reported distance scale.
+//
+// # Additional hashes
+//
+//   - [MedianHash], via [Median] — the 8×8 aHash variant thresholded at the
+//     block median rather than its mean, giving a perfectly balanced 64-bit
+//     fingerprint.
+//   - [AverageHashN], via [AverageN] — [AverageHash] generalised to an arbitrary
+//     n×n grid, trading fingerprint length for spatial detail.
+//   - [WaveletHash], via [Wavelet] — a wavelet hash keeping the 8×8 LL subband
+//     of a three-level 2-D Haar transform of a 64×64 image, thresholded at its
+//     median, 64 bits. The Haar transform is implemented locally and is exactly
+//     invertible (see [HaarDWT2D] and [HaarIDWT2D]).
+//   - [PHashN], via [PerceptualN] — [PHash] with a configurable k×k
+//     low-frequency DCT block, so the fingerprint length and detail are tunable.
+//   - [DHashVertical], via [DifferenceVertical] — the vertical-gradient
+//     transpose of [DHash]; [DHashCombined], via [DifferenceCombined],
+//     concatenates the horizontal and vertical difference hashes into a more
+//     discriminative 128-bit fingerprint.
+//   - [BlockMeanModeHash], via [BlockMeanMode] — the block mean hash with a
+//     selectable projection mode ([BlockMeanMode0] non-overlapping,
+//     [BlockMeanMode1] 50%-overlapping), matching OpenCV's mode enumeration.
+//   - [MarrHildrethHash72], via [MarrHildreth72] — the full 72-bit, multi-scale,
+//     multi-orientation Marr–Hildreth descriptor: the Laplacian-of-Gaussian
+//     response at two Gaussian scales, steered into four orientation channels and
+//     pooled into a 3×3 grid apiece (2×4×9 = 72 bits).
+//   - [RadialVarianceCorrHash], via [RadialVarianceCorr] — the 40-byte
+//     radial-variance fingerprint compared by OpenCV's peak cross-correlation
+//     (see [PeakCrossCorrelation]) instead of L1, so it tolerates image rotation.
+//
+// # Encoding and thresholds
+//
+// [HexEncode] and [HexDecode] convert a fingerprint to and from its hexadecimal
+// text form for storage or transport. [HammingNormalized] scales a binary
+// hash's Hamming distance to [0, 1] so one threshold fits every length,
+// [Similarity] reports 1 − that value as a "percentage alike" score, and
+// [IsDuplicate] applies a normalised-distance threshold to flag near-duplicates.
 //
 // # Choosing a hash and a threshold
 //
@@ -76,13 +114,15 @@
 // # Scope and deferred work
 //
 // This is a faithful port of the algorithms, not a bit-for-bit clone of every
-// OpenCV parameter. In particular the following are intentionally deferred:
+// OpenCV parameter. The multi-scale, multi-orientation Marr–Hildreth descriptor
+// is provided by [MarrHildrethHash72] (the simpler [MarrHildrethHash] remains as
+// a 64-bit LoG variant), and OpenCV's peak-cross-correlation comparison for
+// radial-variance hashes is provided by [RadialVarianceCorrHash] (the L1-based
+// [RadialVarianceHash] is retained). The following remain intentionally deferred:
 //
-//   - The full 72-bit, multi-orientation Marr–Hildreth descriptor with its
-//     exact scale/orientation parameters; [MarrHildrethHash] implements a
-//     simplified 64-bit LoG variant.
-//   - OpenCV's peak-cross-correlation comparison for radial-variance hashes;
-//     [RadialVarianceHash] uses the interface's L1 distance instead.
+//   - Bit-exact reproduction of OpenCV's specific working sizes, kernel taps and
+//     block layouts; the descriptors here follow the same algorithms with
+//     independent, self-consistent parameters.
 //   - Any learned or trained hashes (for example a calibrated descriptor
 //     backed by a trained regressor).
 package imghash

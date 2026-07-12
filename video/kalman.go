@@ -43,6 +43,15 @@ type KalmanFilter struct {
 	ErrorCovPre [][]float64
 	// ErrorCovPost is the corrected n x n error covariance P.
 	ErrorCovPost [][]float64
+
+	// ControlMatrix is the optional n x c control model B applied by
+	// [KalmanFilter.PredictControl]. It is nil until a control model is
+	// installed with [KalmanFilter.SetControlMatrix]; a plain [KalmanFilter.Predict]
+	// never consults it. ControlDim records its column count c.
+	ControlMatrix [][]float64
+	// ControlDim is the dimension c of the control-input vector (0 when no
+	// control model is installed).
+	ControlDim int
 }
 
 // NewKalmanFilter creates a filter for an n-dimensional state and an

@@ -6,24 +6,40 @@
 //
 // # Overview
 //
-// The package groups four kinds of operation:
+// The package groups these kinds of operation:
 //
 //   - Enclosing shapes. [MinEnclosingCircle] finds the smallest circle covering
 //     a point set using Welzl's algorithm, and [MinEnclosingTriangle] finds a
 //     small enclosing triangle by optimising supporting lines around the convex
 //     hull.
 //   - Fitting. [FitLine] fits a line to a point set by total least squares (the
-//     first principal component of the centred points), and [FitEllipse] fits
-//     an ellipse with the direct algebraic least-squares method of Fitzgibbon,
-//     reformulated for numerical stability by Halir and Flusser.
+//     first principal component of the centred points), [FitLineRobust] refits
+//     it with an M-estimator ([DistL1], [DistHuber], [DistFair], [DistWelsch]…)
+//     so a few outliers no longer dominate, and [FitEllipse] fits an ellipse
+//     with the direct algebraic least-squares method of Fitzgibbon, reformulated
+//     for numerical stability by Halir and Flusser.
 //   - Moments and invariants. [ContourMoments] computes the geometric moments of
 //     a closed polygon via Green's theorem, [HuMoments] derives the seven
 //     Hu invariants (invariant to translation, scale and rotation) from a
 //     [cv.Moments] value, and [MatchShapes] compares two contours through their
 //     Hu moments.
-//   - Convexity. [ConvexityDefects] reports the notches of a contour relative to
-//     its convex hull, and [ConvexHullIndices] is a small helper that returns
-//     the hull as indices into the input (the form [ConvexityDefects] consumes).
+//   - Convexity and predicates. [ConvexityDefects] reports the notches of a
+//     contour relative to its convex hull, [ConvexHullIndices] returns the hull
+//     as indices into the input, [IsContourConvex] tests convexity,
+//     [PointPolygonTest] locates a point relative to a polygon (with an optional
+//     signed distance), and [RotatedRectangleIntersection] computes the overlap
+//     polygon of two rotated rectangles.
+//   - Shape matching. [ShapeContextDistanceExtractor] measures the dissimilarity
+//     of two contours with the shape-context pipeline of Belongie, Malik and
+//     Puzicha — log-polar [ShapeContext] histograms, optimal correspondence by
+//     the Hungarian algorithm ([SolveAssignment]) and a thin-plate-spline
+//     bending-energy term — while [HausdorffDistanceExtractor] uses the
+//     (partial) Hausdorff distance. [EMDL1] gives the earth mover's distance
+//     between one-dimensional histograms.
+//   - Geometric transforms. The [ShapeTransformer] interface is implemented by
+//     [ThinPlateSplineShapeTransformer] (a minimum-bending-energy warp that
+//     interpolates control-point correspondences) and [AffineTransformer]
+//     (a full-affine or similarity fit); both estimate, apply and warp images.
 //
 // # Coordinates and conventions
 //

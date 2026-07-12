@@ -33,6 +33,45 @@
 // frequencies sharply for a more seamless result. Both satisfy the [Blender]
 // interface, so a custom blender can be supplied via [Stitcher].Blender.
 //
+// # Surface warping
+//
+// For wide fields of view a single planar homography stretches the image edges
+// unacceptably. The [Warper] interface projects each image onto a curved surface
+// first: [CylindricalWarper] wraps onto a vertical cylinder, [SphericalWarper]
+// onto a sphere, and [PlaneWarper] is the planar identity. Warp and WarpBackward
+// are exact inverses (up to resampling), parameterised by a focal length.
+//
+// # Exposure compensation and seam finding
+//
+// Two stages clean up overlaps before blending. An [ExposureCompensator] removes
+// brightness and colour steps between images: [GainCompensator] solves for one
+// gain per image and [BlocksGainCompensator] for a per-block gain field, while
+// [NoExposureCompensator] disables the stage. A [SeamFinder] then chooses which
+// image supplies each overlap pixel by cutting an invisible seam:
+// [VoronoiSeamFinder] by nearest centre, [DpSeamFinder] by a minimum-cost
+// dynamic-programming path, and [GraphCutSeamFinder] by a globally optimal
+// minimum cut (Dinic max-flow); [NoSeamFinder] leaves overlaps to the blender.
+//
+// # Camera model and global refinement
+//
+// [CameraParams] holds a camera's focal length, principal point and rotation.
+// [HomographyBasedEstimator] (an [Estimator]) recovers these from the pairwise
+// correspondences carried by [MatchesInfo], estimating focal lengths with
+// [EstimateFocalsFromHomography] and chaining rotations outward from the first
+// image. A [BundleAdjuster] — [BundleAdjusterRay] (ray divergence) or
+// [BundleAdjusterReproj] (reprojection error) — then jointly refines every focal
+// and rotation by Levenberg–Marquardt, and [WaveCorrect] removes the residual
+// horizon wave.
+//
+// # Higher-level pipeline and time-lapse
+//
+// [Pipeline] wires the warper, exposure compensator, seam finder and blender
+// around the [Stitcher] into a single configurable builder (see
+// [Pipeline.SetWarper], [Pipeline.SetSeamFinder] and
+// [Pipeline.SetExposureCompensator]), with a [ModePanorama] setting for rotating
+// cameras and a [ModeScans] setting for flat scenes. [Timelapser] composites the
+// positioned images onto a fixed canvas to render a panorama-build time-lapse.
+//
 // # Coordinate and transform conventions
 //
 // Transforms are cv.PerspectiveMatrix values (row-major 3×3 homographies) that
@@ -49,7 +88,10 @@
 // # Scope
 //
 // The package covers planar (homography) stitching with feather and multi-band
-// blending. Cylindrical and spherical warping, exposure compensation, seam
-// finding by graph cut, and global bundle adjustment are intentionally out of
-// scope; images are related pairwise and chained rather than jointly optimised.
+// blending, cylindrical and spherical surface warping, gain and block-gain
+// exposure compensation, Voronoi, dynamic-programming and graph-cut seam
+// finding, homography-based camera estimation, ray and reprojection bundle
+// adjustment, wave correction, a configurable [Pipeline] and a [Timelapser].
+// Everything is self-contained and depends only on the root cv package and the
+// Go standard library.
 package stitching

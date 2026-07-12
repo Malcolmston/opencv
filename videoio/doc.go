@@ -4,11 +4,37 @@
 // library, so it builds and runs anywhere the Go toolchain does — with no cgo
 // and no third-party dependencies.
 //
-// The only container format the standard library can both decode and encode as
-// a multi-frame animation is the GIF, so that is the format this package speaks.
-// A GIF is treated as a short, palette-limited video clip: each stored image is
-// a frame and each frame carries a delay measured in hundredths of a second
-// (centiseconds), exactly as the GIF format records it.
+// A clip is treated as a short sequence of frames, each carrying a delay
+// measured in hundredths of a second (centiseconds). Several containers are
+// supported, all built on standard-library codecs:
+//
+//   - Animated GIF (image/gif) — palette-limited, via [ReadGIF]/[WriteGIF], the
+//     configurable [PalettedGIFWriter] (choice of [PaletteWebSafe],
+//     [PalettePlan9] or an [AdaptivePalette]) and per-frame-delay [WriteGIFDelays].
+//   - Animated PNG / APNG (image/png plus a hand-rolled chunk layer) — a true
+//     lossless format, via [ReadAPNG]/[WriteAPNG], [APNGWriter] and
+//     [WriteAPNGDelays]. A real acTL/fcTL/fdAT chunk stream is assembled and
+//     parsed, and plain PNGs decode as a single frame.
+//   - Motion-JPEG AVI (image/jpeg inside a real RIFF/AVI container) — via
+//     [ReadMJPEGAVI]/[WriteMJPEGAVI] and [AVIWriter]. The writer emits a genuine
+//     RIFF structure (avih, strh, strf BITMAPINFOHEADER, movi, idx1) of
+//     concatenated JPEG frames; the reader walks it back.
+//   - Numbered image sequences (frame0001.png, …) — via [ImageSequenceWriter],
+//     [ReadImageSequence]/[WriteImageSequence] and [OpenImageSequence].
+//
+// [WriteVideoFromMats] and [ReadVideoToMats] dispatch to the right container by
+// file extension.
+//
+// # Captures, properties and seeking
+//
+// Every reader materialises its frames into a [VideoCapture], which offers the
+// OpenCV-style property model: [VideoCapture.Get] and [VideoCapture.Set] read
+// and write CAP_PROP_* values (FPS, frame count, width, height, position),
+// [VideoCapture.Grab]/[VideoCapture.Retrieve] mirror OpenCV's two-step read, and
+// [VideoCapture.SetPosFrames] seeks. [OpenGIF], [OpenAPNG], [OpenAVI] and
+// [OpenImageSequence] all return one and satisfy the [FrameGrabber] interface.
+// [ResampleFrames] and [ResampleCapture] retime a clip from one frame rate to
+// another by nearest-frame sampling.
 //
 // # Relationship to OpenCV
 //

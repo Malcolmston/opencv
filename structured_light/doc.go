@@ -48,7 +48,56 @@
 // recovers a wrapped phase map with [SinusoidalPattern.ComputeWrappedPhase].
 // The wrapped phase lies in (-π, π]; [UnwrapPhaseMap] removes the 2π
 // discontinuities along the fringe direction to yield a continuous absolute
-// phase that is proportional to the projector coordinate.
+// phase that is proportional to the projector coordinate. [NStepWrappedPhase]
+// is a stack-only, arbitrary-step generalization of the same estimator.
+//
+// # Temporal phase unwrapping
+//
+// A single fringe frequency wraps every period, so a spatial unwrap fails
+// wherever the surface is discontinuous. The temporal routines resolve the
+// ambiguity per-pixel instead, from a set of frequencies:
+// [MultiFrequencyUnwrap] performs hierarchical ratio unwrapping and
+// [HeterodyneUnwrap] the two-/three-frequency beat method. Both take
+// [FrequencyPhase] levels and recover an absolute phase whose range far exceeds
+// 2π. [CombineGrayAndPhase] fuses a coarse Gray-code fringe order with a fine
+// phase-shift wrap (the Gray-code-plus-phase-shift hybrid), and
+// [QualityGuidedUnwrap] follows a [PhaseGradientQuality] map to unwrap 2-D
+// fields along their most reliable path first.
+//
+// # Fourier-transform profilometry
+//
+// [FTPWrappedPhase] (and the fixed-band [FTPWrappedPhaseBand]) recover phase
+// from a single fringe image by band-pass filtering one sideband in the
+// frequency domain — a one-shot alternative to multi-image phase shifting,
+// implemented with a dependency-free DFT.
+//
+// # Quality maps and masking
+//
+// [ComputeDataModulation], [ComputeAmplitude] and [ComputeBackground] turn a
+// phase-shift stack into per-pixel confidence and signal maps. [ShadowMask],
+// [OverexposureMask] and [ModulationMask] (combined with [CombineMasks]) reject
+// unlit, saturated and low-contrast pixels before decoding.
+//
+// # Binary vs. Gray encoding
+//
+// [CodePattern] generates and decodes column/row codes under a selectable
+// [Encoding] — reflected Gray (robust, the default) or natural binary — so the
+// two schemes can be compared through an identical pipeline.
+//
+// # Triangulation and stereo
+//
+// Given a decoded correspondence and calibrated [CameraMatrix] projection
+// matrices (built with [NewPinhole]), [TriangulatePoint] and [Triangulate]
+// reconstruct 3-D world points into a [PointCloud] by the linear DLT method.
+// [StereoDecode] converts two cameras' decodings into projector-referenced
+// [StereoMatch] correspondences that [TriangulateStereo] reconstructs.
+// Calibration itself (recovering the intrinsics/pose) is still out of scope;
+// the projection matrices are supplied by the caller.
+//
+// # Pattern export
+//
+// [WritePatternPNG], [EncodePatternPNG], [SavePatternPNG] and
+// [SavePatternStack] serialize generated pattern stacks to PNG for projection.
 //
 // # Determinism
 //
@@ -65,17 +114,18 @@
 //
 // # Deferred
 //
-// The following parts of the OpenCV module are intentionally NOT implemented:
+// The following parts of the OpenCV module remain intentionally NOT implemented:
 //
-//   - Projector-camera calibration and triangulation to 3-D points. Decoding
-//     stops at the 2-D camera→projector correspondence; no depth is produced.
-//   - Multi-frequency / temporal phase unwrapping. [UnwrapPhaseMap] performs a
-//     simple line-by-line spatial unwrap along the fringe direction, which is
-//     exact for a clean, monotonic phase ramp but is not quality-guided and can
-//     be defeated by noise or true 2π-per-pixel gradients.
-//   - The Fourier-transform profilometry (FTP) and marker-based absolute-phase
-//     methods of cv::structured_light::SinusoidalPattern. Only the classic
-//     N-step phase-shifting method is provided.
+//   - Projector-camera calibration. Triangulation is provided
+//     ([TriangulatePoint], [Triangulate], [TriangulateStereo]) but the
+//     projection matrices must be supplied by the caller; this package does not
+//     recover intrinsics, distortion or pose from calibration captures.
+//   - Marker-based absolute-phase disambiguation of
+//     cv::structured_light::SinusoidalPattern. Absolute phase is instead
+//     obtained by temporal unwrapping ([MultiFrequencyUnwrap],
+//     [HeterodyneUnwrap]), Gray-code fusion ([CombineGrayAndPhase]) or FTP
+//     ([FTPWrappedPhase]).
+//   - Lens-distortion modelling; the pinhole [CameraMatrix] is linear only.
 //   - Reading/writing real projector-camera captures; the "capture" step in the
 //     tests is simulated by sampling the generated patterns at a known mapping.
 package structured_light

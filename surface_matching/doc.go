@@ -18,16 +18,27 @@
 // scene:
 //
 //   - [PointCloud] holds oriented points (coordinates plus unit normals).
-//     [PointCloud.ComputeNormals] estimates normals from local PCA and
-//     [PointCloud.VoxelDownsample] thins a cloud; [LoadPLY] reads ASCII PLY.
-//   - [PPF3DDetector.TrainModel] hashes every oriented point pair of the model
-//     into a quantised 4-D feature (distance F1 plus three angles F2, F3, F4)
-//     together with the pair's local alpha angle.
+//     [PointCloud.ComputeNormals], [ComputeNormalsPC3d] and
+//     [ComputeNormalsRadius] estimate normals from local PCA;
+//     [PointCloud.VoxelDownsample], [SamplePCUniform] and
+//     [SamplePCByQuantization] thin a cloud; [LoadPLY] and [ReadPLY] read ASCII
+//     and binary PLY, and [WritePLY]/[WritePLYBinary] export it.
+//   - [PPF3DDetector.TrainModel] (or the boundary-robust
+//     [PPF3DDetector.TrainModelSpread]) hashes every oriented point pair of the
+//     model into a quantised 4-D feature (distance F1 plus three angles F2, F3,
+//     F4) together with the pair's local alpha angle.
 //   - [PPF3DDetector.Match] votes sampled scene pairs against that table in a
 //     Hough scheme, extracts accumulator peaks as candidate [Pose3D] values,
-//     and clusters and averages them, returning candidates sorted by vote.
-//   - [ICP] refines any pose by point-to-point iterative closest point,
-//     returning the tightened pose and its residual.
+//     and clusters and averages them, returning candidates sorted by vote;
+//     [PPF3DDetector.MatchInstances] additionally separates several distinct
+//     occurrences of the model in one scene by non-maximum suppression.
+//   - [ICP] refines any pose by point-to-point ([ICP.Register],
+//     [ICP.RegisterKD]), point-to-plane ([ICP.RegisterPointToPlane]) or
+//     coarse-to-fine multi-resolution ([ICP.RegisterMultiScale]) iterative
+//     closest point, accelerated by a [KDTree3D], returning the tightened pose
+//     and its residual.
+//   - [ScorePose] and [VerifyPose] verify a hypothesised pose by its geometric
+//     inlier ratio.
 //
 // # Conventions
 //
@@ -55,21 +66,24 @@
 //
 // # Scope and deferred features
 //
-// Implemented and tested: oriented point clouds with PCA normal estimation and
-// voxel down-sampling; ASCII-PLY loading; the full PPF train/match Hough-voting
-// pipeline with model-frame alpha; pose clustering and vote-weighted averaging;
-// and point-to-point ICP with median-based correspondence rejection.
+// Implemented and tested: oriented point clouds with PCA normal estimation
+// (k-nearest and fixed-radius variants) and several thinning strategies (voxel,
+// uniform stride and quantisation sampling); ASCII and binary PLY reading and
+// writing; a static balanced [KDTree3D] (nearest, k-nearest and radius queries)
+// backing the ICP correspondence search, normal estimation and pose scoring;
+// the full PPF train/match Hough-voting pipeline with model-frame alpha,
+// boundary-spread indexing, a flattened bucketed-hash accelerator
+// ([PPFHashIndex]) and multi-instance detection; pose clustering, vote-weighted
+// averaging and non-maximum suppression; point-to-point, KD-accelerated,
+// point-to-plane and multi-resolution ICP with median-based correspondence
+// rejection; and geometric pose scoring and verification.
 //
 // Deliberately deferred (not implemented here):
 //
-//   - No spatial acceleration structure. Both PPF matching and ICP nearest-
-//     neighbour search are brute force (O(n²)); there is no KD-tree or FLANN.
-//     This bounds practical use to the modest clouds typical of unit tests and
-//     small objects.
-//   - ICP is point-to-point only; the point-to-plane variant that uses normals
-//     is not provided.
-//   - The PLY reader is ASCII only and ignores colour and any non-vertex
-//     elements; binary PLY is unsupported.
-//   - No multi-instance non-maximum suppression beyond simple pose clustering,
-//     and no learned or hyperparameter auto-tuning of the sampling steps.
+//   - The PLY readers assume the vertex element appears first (as writers in
+//     this package and OpenCV emit) and ignore colour, faces and other
+//     non-vertex elements.
+//   - No learned or hyperparameter auto-tuning of the sampling steps, and no
+//     GPU or multi-threaded execution; the code favours clarity and determinism
+//     over raw throughput.
 package surface_matching

@@ -29,10 +29,33 @@
 //     statistics and turns them into a fixed-length binary code that is
 //     invariant to translation of the segment. See [BinaryDescriptor.Compute].
 //   - [BinaryDescriptorMatcher] — a brute-force Hamming matcher over the binary
-//     codes, offering both a best-match ([BinaryDescriptorMatcher.Match]) and a
-//     k-nearest-neighbour ([BinaryDescriptorMatcher.KnnMatch]) query.
-//   - [DrawKeylines] — renders detected segments onto an image for
-//     visualisation, mirroring cv::line_descriptor::drawKeylines.
+//     codes, offering a best-match ([BinaryDescriptorMatcher.Match]), a
+//     k-nearest-neighbour ([BinaryDescriptorMatcher.KnnMatch]) and a
+//     radius ([BinaryDescriptorMatcher.RadiusMatch]) query.
+//   - [LSHIndex] — a multi-index locality-sensitive-hashing structure over the
+//     binary codes that retrieves near-duplicate descriptors without an
+//     exhaustive scan, mirroring the FLANN LSH matcher upstream, with
+//     k-nearest-neighbour and radius queries.
+//   - [DrawKeylines] and [DrawLineMatches] — render detected segments and
+//     cross-image matches for visualisation, mirroring
+//     cv::line_descriptor::drawKeylines and drawLineMatches.
+//
+// # Multi-octave detection
+//
+// Beyond the single-scale [LSDDetector.Detect], the package builds a Gaussian
+// [ScalePyramid] and detects lines at several scales:
+//
+//   - [LSDDetector.DetectPyramid] returns [KeyLineEx] values — the full upstream
+//     KeyLine with real [KeyLine.Octave] tags, octave-space endpoints
+//     ([KeyLineEx.StartPointInOctave] etc.), NumOfPixels and back-projected
+//     original-image geometry.
+//   - [LSDDetector.DetectWithScale] detects at one chosen octave.
+//   - [EDLinesDetector] offers the Edge Drawing Lines detector as an alternative
+//     front end that traces one-pixel-wide edge chains before fitting segments.
+//   - [BinaryDescriptor.ComputeMultiOctave] describes each segment in the
+//     resolution of the octave it was found in.
+//   - [MatchLineSegments] adds geometric (orientation, length, overlap)
+//     verification on top of the appearance-only descriptor match.
 //
 // # Coordinate and angle conventions
 //
@@ -50,13 +73,16 @@
 //
 // # Deferred features
 //
-// The following pieces of the upstream module are intentionally not
-// implemented and are documented here so callers know what is missing:
+// Multi-octave scale-pyramid detection/description and the EDLines detector,
+// previously deferred, are now implemented (see the Multi-octave detection
+// section above). The remaining simplifications relative to upstream are:
 //
-//   - Multi-octave scale-pyramid LBD. Upstream LSDDetector and BinaryDescriptor
-//     build a Gaussian pyramid and detect/describe lines at several scales,
-//     tagging each KeyLine with its octave and merging matches across octaves.
-//     This port works at a single scale; every [KeyLine.Octave] is 0.
-//   - EDLines, the edge-drawing line detector offered as an alternative front
-//     end in some builds of the upstream module.
+//   - The a-contrario NFA validation and rectangle refinement of the original
+//     LSD paper are replaced by the simpler length/density test documented on
+//     [LSDDetector.Detect]; segment endpoints are therefore not sub-pixel
+//     refined.
+//   - The LBD descriptor uses per-band gradient statistics binarised against
+//     their cross-band mean rather than upstream's full Gaussian-weighted
+//     band-pair difference matrix, so codes are compatible only within this
+//     package, not with OpenCV's serialized descriptors.
 package linedescriptor

@@ -38,10 +38,52 @@
 //     whole continuous surface, useful for constructing test inputs.
 //   - [ReliabilityMap] — a standalone quality/reliability helper exposing the
 //     same second-difference measure used to guide the path.
-//   - [Residues] and [CountResidues] — a straightforward Goldstein-style residue
-//     (branch-cut charge) detector. Residue-free maps are guaranteed to unwrap
+//   - [Residues], [CountResidues] and [ResidueList] — a straightforward
+//     Goldstein-style residue (branch-cut charge) detector, as a dense grid, a
+//     count and an explicit list. Residue-free maps are guaranteed to unwrap
 //     exactly along any spanning path; residues signal genuinely ambiguous
 //     (under-sampled or noisy) regions.
+//
+// # Additional unwrapping methods
+//
+// Beyond the histogram core this package provides a family of standard 2-D
+// unwrappers, all deterministic and all recovering a residue-free surface exactly
+// (up to a global 2*pi constant):
+//
+//   - [GoldsteinBranchCut] — residue detection, opposite-polarity branch-cut
+//     placement (with border connection for unbalanced residues) and flood-fill
+//     integration that never crosses a cut. The result is always congruent to the
+//     input. [BranchCuts] exposes the cut mask on its own.
+//   - [LeastSquaresUnwrap] / [LeastSquaresUnwrapMat] — unweighted minimum-norm
+//     unwrapping solving the Neumann-boundary Poisson equation exactly with the
+//     2-D discrete cosine transform (Ghiglia and Pritt).
+//   - [WeightedLeastSquaresUnwrap] — weighted least squares via preconditioned
+//     conjugate gradients using the DCT Poisson solver as preconditioner, letting
+//     unreliable pixels be down-weighted or masked out.
+//   - [FlynnMinimumDiscontinuity] — minimisation of the total weighted 2*pi
+//     discontinuity of the result by local integer moves over a path-integrated
+//     start, in the spirit of Flynn's algorithm; [TotalDiscontinuity] scores the
+//     objective.
+//   - [QualityGuidedUnwrap] and [MaskedUnwrap] — priority-queue quality-guided
+//     path following over a reliability map, optionally restricted to a boolean
+//     mask (masked-out pixels become NaN).
+//   - [TemporalUnwrap] — temporal (multi-wavelength / multi-frequency) unwrapping
+//     that resolves each pixel independently from a coarse unambiguous map to a
+//     fine one, with no spatial error propagation.
+//   - [Unwrapper] — a common interface unifying every method, with adapters
+//     [HistogramUnwrapper], [LeastSquaresUnwrapper], [WeightedLeastSquaresUnwrapper],
+//     [GoldsteinUnwrapper], [FlynnUnwrapper] and [QualityGuidedUnwrapper].
+//
+// # Quality maps and operators
+//
+//   - [PhaseDerivativeVariance], [MaximumPhaseGradient] and [PseudoCorrelation] —
+//     the standard Ghiglia and Pritt quality maps (the first two are cost maps
+//     where lower is better; the last is a reliability map where higher is
+//     better) that drive the quality-guided and weighted methods.
+//   - [WrapToPi] — the canonical scalar wrapping operator; [Rewrap] re-wraps a
+//     whole unwrapped surface; [Congruence] snaps a non-congruent estimate (from
+//     least squares, say) onto the surface closest to it that re-wraps to the
+//     input.
 //
 // # Input and output conventions
 //
@@ -69,17 +111,17 @@
 //
 // The following related techniques are intentionally not implemented:
 //
-//   - Branch-cut / Goldstein path-following that places cuts between residues
-//     of opposite sign. [Residues] detects residues but no cut placement or
-//     integration around cuts is performed.
-//   - Minimum L-p norm (least-squares, weighted least-squares, L0/L1)
-//     unwrapping via FFT/DCT Poisson solvers or iterative solvers.
-//   - Network-flow / minimum-cost-flow global optimisation.
-//   - Temporal (multi-frequency) and 3-D volumetric unwrapping.
+//   - Exact network-flow / minimum-cost-flow global L0/L1 optimisation. Discrete
+//     discontinuities are minimised by the local search in
+//     [FlynnMinimumDiscontinuity] rather than a global min-cost-flow solver.
+//   - 3-D volumetric and phase-shifting-specific unwrapping.
 //   - OpenCV's exact fixed-point histogram bin layout and its mask/shadow
-//     handling; this port uses float64 throughout and treats every pixel as
-//     valid.
+//     handling; this port uses float64 throughout and, except where a mask is
+//     passed explicitly to [MaskedUnwrap], treats every pixel as valid.
 //
 // The quality-guided histogram method is the required, fully working core; the
-// items above are the documented gaps relative to the wider literature.
+// additional branch-cut, least-squares, weighted least-squares, minimum-
+// discontinuity, quality-guided, masked and temporal methods round out the
+// classical 2-D unwrapping toolbox, and the items above are the remaining gaps
+// relative to the wider literature.
 package phase_unwrapping

@@ -33,16 +33,30 @@
 //
 // # Supported symbol sizes
 //
-// The following square sizes are supported, and [Encode] auto-selects the
-// smallest that fits:
+// The original [Encode]/[DecodeMatrix] path auto-selects the smallest of the six
+// small square sizes (10x10 through 20x20). The extended [EncodeText]/[DecodeGrid]
+// path additionally supports every larger square (22x22 through 132x132, with
+// multi-region data mapping and interleaved Reed-Solomon blocks) and all six
+// rectangular sizes (8x18, 8x32, 12x26, 12x36, 16x36 and 16x48).
 //
-//	Size   Data CW   ECC CW   ASCII chars   Digit chars
-//	10x10        3        5          ~2            ~6
-//	12x12        5        7          ~4           ~10
-//	14x14        8       10          ~7           ~16
-//	16x16       12       12         ~11           ~24
-//	18x18       18       14         ~17           ~36
-//	20x20       22       18         ~21           ~44
+// # Extended encoder ([EncodeText])
+//
+// [EncodeText] and [EncodeTextSymbol] accept [EncodeOptions] that select the
+// encodation [Scheme], the [SizePreference] (square, rectangular or automatic),
+// an Extended Channel Interpretation (ECI) number, a GS1 FNC1 indicator and
+// structured-append parameters. With SchemeAuto the encoder switches among the
+// ASCII, C40, Text, X12, EDIFACT and Base 256 schemes using the ISO/IEC 16022
+// Annex P look-ahead cost model to keep the codeword count small, emitting the
+// correct latch and unlatch codewords at every scheme boundary.
+//
+// # Extended decoder ([DecodeGrid], [DecodeText], [DecodeAll])
+//
+// [DecodeGrid] decodes a module grid of any supported size; [DecodeText] locates
+// and decodes a single symbol in an image; and [DecodeAll] segments an image by
+// a recursive X-Y cut and decodes every symbol it contains. All three return a
+// [DecodedResult] carrying the content bytes plus any ECI, GS1 and
+// structured-append metadata, and repair errors per interleaved Reed-Solomon
+// block before decoding.
 //
 // # Determinism
 //
@@ -53,19 +67,19 @@
 //
 // # DEFERRED
 //
-// This package intentionally implements a focused, genuinely-working subset.
-// The following are NOT implemented:
+// This package implements a broad, genuinely-working subset of ECC200. The
+// following remain NOT implemented:
 //
-//   - Only ASCII encodation. The C40, Text, X12, EDIFACT and Base256 modes are
-//     not implemented; inputs must be 7-bit ASCII (bytes 0-127). A symbol that
-//     selects one of these modes is reported via an unsupported-mode error.
-//   - Only the six square sizes listed above. Larger square symbols (which use
-//     multiple data regions and interleaved Reed-Solomon blocks) and all
-//     rectangular symbols are not supported.
-//   - Detection is tolerant of an integer scale factor and a white quiet zone,
-//     and expects an axis-aligned, dark-on-light symbol. Full perspective or
-//     rotation correction, illumination normalisation and multi-symbol
-//     detection are not implemented.
-//   - Extended Channel Interpretation (ECI), structured append, reader
-//     programming and macro codewords are not implemented.
+//   - The single 144x144 symbol, whose Reed-Solomon block structure is a special
+//     case, is not in the size table (every other standard size, 10x10 through
+//     132x132 and the six rectangular sizes, is supported).
+//   - Detection ([DetectAndDecode], [DecodeText], [DecodeAll]) is tolerant of an
+//     integer scale factor and a white quiet zone and expects axis-aligned,
+//     dark-on-light symbols separated by white space. Full perspective or
+//     rotation correction and illumination normalisation are not implemented.
+//   - Reader programming and the Macro 05/06 codewords are not implemented; GS1
+//     FNC1 is handled only in ASCII-mode content (group separators map to FNC1).
+//   - The legacy [Encode]/[DecodeMatrix] path still handles ASCII encodation and
+//     the six small square sizes only; use [EncodeText]/[DecodeGrid] for the
+//     other schemes and sizes.
 package datamatrix

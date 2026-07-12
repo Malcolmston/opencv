@@ -14,21 +14,41 @@
 // scene into a single image that captures detail across the whole tonal range.
 // The classic three-stage pipeline, all of which this package implements, is:
 //
+//  0. Optionally align a hand-held bracket. [AlignMTB] implements Ward's (2003)
+//     median-threshold-bitmap aligner (createAlignMTB), recovering the
+//     whole-pixel translation between frames with [AlignMTB.CalculateShift] and
+//     registering a whole stack with [AlignMTB.Process].
 //  1. Calibrate the camera response function (CRF) that maps scene radiance to
 //     recorded 8-bit pixel values. [CalibrateDebevec] recovers it with the
 //     Debevec & Malik (1997) least-squares method (data term + second-order
 //     smoothness + a hat weighting); [CalibrateRobertson] offers the Robertson
-//     (1999) iterative maximum-likelihood alternative.
+//     (1999) iterative maximum-likelihood alternative. Recovered curves can be
+//     inspected and repaired with the [CameraResponse] accessors
+//     ([CameraResponse.Response], [CameraResponse.ChannelCurve],
+//     [CameraResponse.IsMonotonic], [CameraResponse.EnforceMonotonic],
+//     [CameraResponse.Normalize]).
 //  2. Merge the LDR stack into a linear radiance map. [MergeDebevec] performs
 //     the weighted log-radiance average using the calibrated response and the
 //     per-image exposure times, producing a [Radiance] (a multi-channel float
-//     image). [MergeMertens] instead performs Mertens exposure fusion, which
-//     blends the stack directly into a displayable image with no response or
-//     exposure times required.
+//     image); [MergeDebevecFunc] lets the caller supply a robustness
+//     [WeightFunc] ([HatWeight], [TentWeight], [GaussianWeight],
+//     [UniformWeight]). [MergeRobertson] is the Robertson-estimator merge.
+//     [MergeMertens] (and the reusable [MergeMertensProcessor]) instead perform
+//     Mertens exposure fusion, blending the stack directly into a displayable
+//     image with no response or exposure times required.
 //  3. Tonemap the radiance map into a displayable 8-bit image. All tonemappers
 //     satisfy the [Tonemap] interface. [TonemapGamma] is a plain gamma curve;
-//     [TonemapReinhard], [TonemapDrago] and [TonemapMantiuk] are operators that
-//     compress dynamic range while preserving local detail.
+//     [TonemapReinhard], [TonemapDrago], [TonemapMantiuk], [TonemapDurand]
+//     (bilateral base/detail) and [TonemapMantiukGradient] (gradient-domain
+//     Poisson reconstruction) compress dynamic range while preserving local
+//     detail. [DetailEnhance] and [EdgePreservingFilter] finish a tonemapped
+//     image, and [ApplyColorMap] / [Radiance.Visualize] render a radiance map in
+//     false colour.
+//
+// Radiance maps can be measured with [Radiance.MinMax], [Radiance.Mean],
+// [Radiance.LogAverageLuminance] and [Radiance.DynamicRange], and exchanged with
+// other tools through the PFM ([WritePFM]/[ReadPFM]) and Radiance RGBE
+// ([WriteHDR]/[ReadHDR]) float-image formats.
 //
 // # Conventions
 //
@@ -55,10 +75,13 @@
 //
 // The following OpenCV HDR features are intentionally out of scope:
 //
-//   - Exposure alignment (createAlignMTB, the median-threshold-bitmap aligner).
-//     Inputs are assumed to be already aligned.
-//   - The full Mantiuk (2006) gradient-domain operator. [TonemapMantiuk] is a
-//     local-contrast approximation in the log-luminance domain; it does not
-//     perform the Poisson reconstruction of the true gradient-domain method.
+//   - Sub-pixel and rotational alignment. [AlignMTB] corrects whole-pixel
+//     translation only, as in OpenCV.
+//   - Run-length-encoded (RLE) Radiance RGBE scanlines. [WriteHDR] and [ReadHDR]
+//     use the uncompressed "flat" encoding, which every reader accepts.
 //   - Bad-pixel / ghost removal and any GPU acceleration.
+//
+// [TonemapMantiukGradient] provides a genuine gradient-domain operator (gradient
+// attenuation followed by a Poisson solve); [TonemapMantiuk] remains the faster
+// single-surround local-contrast approximation.
 package hdr

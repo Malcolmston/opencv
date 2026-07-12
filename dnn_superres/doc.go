@@ -21,8 +21,10 @@
 // point reduction that depends on iteration order beyond a fixed left-to-right
 // tap sum.
 //
-// Only integer scale factors 2, 3 and 4 are supported, matching the trained
-// OpenCV models. The output dimensions are exactly (Rows*scale, Cols*scale).
+// The stateful [DnnSuperResImpl] wrapper and the six original free functions
+// support integer scale factors 2, 3 and 4, matching the trained OpenCV models.
+// The extended methods described below accept any integer scale of 2 or more. In
+// every case the output dimensions are exactly (Rows*scale, Cols*scale).
 //
 // # Algorithms
 //
@@ -43,6 +45,51 @@
 //     fixed separable unsharp-mask sharpening kernel. This imitates the visual
 //     effect of a learned upscaler's high-frequency recovery using hand-built
 //     kernels. It is explicitly NOT a trained FSRCNN network (see below).
+//
+// # Extended classical super-resolution
+//
+// Beyond the six algorithms above, the package adds a family of genuinely
+// working, weight-free single-image super-resolution methods. Unlike the six
+// scale-2/3/4 methods, these accept ANY integer scale of 2 or more (×5, ×8,
+// ×16, …). They are all deterministic and preserve constant regions exactly.
+//
+//   - [UpsampleLapSRN] — a LapSRN-style progressive (Laplacian-pyramid)
+//     upscaler: the image is doubled repeatedly (×2 → ×4 → ×8 …) and an
+//     edge-gated high-frequency residual is added at every level, with a final
+//     bicubic resample for non-power-of-two factors. NOT the trained network.
+//   - [UpsampleESPCN] — an ESPCN-style sub-pixel / pixel-shuffle upscaler built
+//     from fixed polyphase decompositions of a Keys cubic: each output
+//     sub-pixel position gets its own phase filter, arranged by the
+//     depth-to-space rearrangement. NOT the trained network.
+//   - [UpsampleNEDI] — New Edge-Directed Interpolation with a full 4×4 local
+//     covariance model, so reconstruction follows the dominant edge orientation.
+//   - [UpsampleDCCI] — Directional Cubic Convolution Interpolation: each pixel
+//     is interpolated along the locally smoothest direction with a Catmull-Rom
+//     cubic, keeping diagonal edges free of zig-zag artefacts.
+//   - [IterativeBackProjection] / [UpsampleIBP] — reconstruction-based
+//     refinement that back-projects the residual between the down-sampled
+//     estimate and the true low-resolution input.
+//   - [EdgeGuidedUpscale] / [UpsampleGradientProfile] — gradient-profile
+//     sharpening: an unsharp detail band modulated by local gradient magnitude,
+//     steepening edges while leaving flat regions untouched.
+//   - [UpsampleMitchell], [UpsampleBSpline], [UpsampleHermite],
+//     [UpsampleLanczos3], [UpsampleGaussian] — additional separable
+//     reconstruction kernels spanning the sharpness/smoothness spectrum.
+//   - [UpsampleScale] — general-purpose arbitrary-factor bicubic.
+//
+// # Colour handling and quality evaluation
+//
+// [UpsamplePerChannel] runs any [UpsampleFunc] on each channel independently,
+// and [UpsampleLumaOnly] upscales only the luma channel of an RGB image with a
+// high-quality method (converting through YCrCb) while enlarging chroma with
+// cheap bilinear — the standard, perceptually-motivated way to apply
+// super-resolution.
+//
+// Reconstruction quality is measured with [PSNR], [MSE] and [SSIM] (mean
+// structural similarity over an 11×11 Gaussian window). [Benchmark] runs a
+// controlled experiment — downsample a reference, upscale it with each method,
+// and score the results — returning them sorted best-first; [DefaultUpsamplers]
+// supplies a representative arbitrary-scale method set.
 //
 // # Deferred (NOT implemented as real OpenCV behaviour)
 //

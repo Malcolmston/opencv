@@ -42,14 +42,49 @@
 // latest result with [Retina.GetParvo] / [Retina.GetMagno] (or the unquantised
 // [Retina.GetParvoRAW] / [Retina.GetMagnoRAW]), and call [Retina.ClearBuffers]
 // to reset the temporal state between independent sequences. Parameters are
-// exposed through [RetinaParameters] and [DefaultRetinaParameters].
+// exposed through [RetinaParameters] and [DefaultRetinaParameters]. They can be
+// serialised to and from a plain-text form with [Retina.Write] /
+// [Retina.SetupFromText] (or the standalone [WriteRetinaParameters] /
+// [ReadRetinaParameters]) and checked with [RetinaParameters.Validate]. The
+// retina reports its geometry through [Retina.GetInputSize] / [Retina.GetOutputSize].
+//
+// # Channel-activation toggles
+//
+// [RetinaProcessor] wraps a [Retina] and adds OpenCV's channel switches:
+// [RetinaProcessor.ActivateContoursProcessing] gates the parvo channel and
+// [RetinaProcessor.ActivateMovingContoursProcessing] gates the magno channel; a
+// disabled channel returns an all-zero image while its temporal state keeps
+// running.
+//
+// # Moving-region segmentation
+//
+// [TransientAreasSegmentationModule] turns the transient (magno) response into a
+// binary map of moving areas by comparing a compact local motion energy against
+// a broad surround energy with hysteresis thresholding. Feed the transient with
+// [TransientAreasSegmentationModule.Run] / [TransientAreasSegmentationModule.RunFloat]
+// and read [TransientAreasSegmentationModule.GetSegmentationPicture].
+//
+// # Colour multiplexing
+//
+// [MosaicBayer] and [DemosaicBayer] implement the colour-filter-array
+// multiplexing / demultiplexing of the retina colour path: an RGB image is
+// projected onto a single-channel [BayerPattern] mosaic and reconstructed by
+// bilinear demosaicing.
+//
+// # ON/OFF split and log sampling
+//
+// [SplitOnOffChannels] models the rectified ON and OFF centre-surround
+// ganglion-cell pathways. [RetinaLogSampler] performs the retina's non-uniform,
+// log-polar photoreceptor sampling (foveal magnification) and its approximate
+// inverse.
 //
 // # Fast tone mapping
 //
 // [RetinaFastToneMapping] reuses the photoreceptor and ganglion-cell local
 // adaptation stages, without any temporal state, to compress a high-dynamic-
 // range-ish image into the displayable [0,255] range while lifting shadow
-// detail. See [RetinaFastToneMapping.ProcessFrame].
+// detail. See [RetinaFastToneMapping.ProcessFrame]. [ApplyFastToneMapping] and
+// [Retina.ApplyFastToneMapping] are one-shot convenience wrappers.
 //
 // # Conventions
 //
@@ -74,20 +109,26 @@
 //
 // # Deferred / simplifications versus OpenCV
 //
-// This is a faithful but deliberately simplified port. The following aspects of
-// the full Benoit et al. model and OpenCV's implementation are not implemented:
+// This is a faithful but deliberately simplified port. Log-polar photoreceptor
+// sampling, ON/OFF ganglion pathways, Bayer colour multiplexing, moving-region
+// segmentation, parameter text round-trip and the channel toggles are provided
+// as the additional types and functions documented above. The following aspects
+// of the full Benoit et al. model and OpenCV's implementation remain simplified:
 //
-//   - No log-polar cortical (retino-cortical) sampling or foveal magnification;
-//     all processing is on the uniform Cartesian pixel grid.
+//   - The core [Retina.Run] pipeline still processes the uniform Cartesian pixel
+//     grid; [RetinaLogSampler] offers the log-polar transform as a separate,
+//     opt-in stage rather than folding it into the filter bank.
 //   - The OPL/IPL filters are modelled as separable exponential low-pass and
 //     difference-of-low-pass stages rather than the exact coupled
 //     photoreceptor / horizontal-cell / bipolar / amacrine differential
 //     equations with their full coefficient derivation.
 //   - No spatial-constant adaptation driven by the local signal
-//     (EnableSpatialConstantsAdaptation is accepted but not acted upon), and no
-//     separate ON/OFF ganglion-cell rectified pathways.
-//   - No colour multiplexing/demultiplexing on a Bayer mosaic; colour is
-//     processed as independent RGB planes sharing a luminance reference.
+//     (EnableSpatialConstantsAdaptation is accepted but not acted upon). The
+//     ON/OFF split is exposed as the standalone [SplitOnOffChannels] operator
+//     rather than being wired through the parvo ganglion stage of [Retina.Run].
+//   - Colour in [Retina.Run] is processed as independent RGB planes sharing a
+//     luminance reference; [MosaicBayer] / [DemosaicBayer] provide the mosaic
+//     colour multiplexing as separate operators.
 //   - RetinaFastToneMapping approximates OpenCV's dedicated fast-tone-mapping
 //     class with two cascaded local-adaptation stages rather than the full
 //     retina filter bank.

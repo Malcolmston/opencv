@@ -7,6 +7,59 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.4.0] - 2026-07-12
+### Added
+- **~650 new functions deepening all 40 module subpackages toward OpenCV
+  (`cv2`) parity**, delivered in four waves. Every addition is genuinely
+  working (no stubs), imports only the root `cv` package + the Go standard
+  library, and ships full godoc, deterministic tests and runnable examples
+  (statement coverage 80–97%; golangci-lint clean). Where OpenCV relies on
+  trained model files, the ports implement the underlying classical algorithm
+  and document the approximation.
+- Geometry/3D: `calib3d` (CalibrateCamera/StereoCalibrate/StereoRectify/
+  SolvePnP(Ransac)/FindEssentialMat/RecoverPose/chessboard), `stereo` (8-path
+  SGM/HH, census, WLS, quasi-dense), `rgbd` (point-to-plane & colored ICP,
+  RGBD/ICP odometry, TSDF volume, FALS/LINEMOD/SRI normals), `surface_matching`
+  (KD-tree ICP, point-to-plane, multi-instance PPF, PLY I/O), `structured_light`
+  (multi-frequency/heterodyne unwrap, FTP, DLT triangulation, stereo decode),
+  `phase_unwrapping` (Goldstein branch-cut, DCT-Poisson/PCG least-squares,
+  Flynn, quality-guided, temporal).
+- 2D features: `features2d` (SIFT/KAZE/AKAZE/FLANN matcher/BOW), `xfeatures2d`
+  (FREAK/DAISY/LATCH/LUCID/SURF-lite/BEBLID + matchGMS/LOGOS), `linedescriptor`
+  (multi-octave LBD, EDLines, LSH matcher), `flann` (hierarchical/composite/
+  autotuned indices, more distances).
+- Detection/recognition: `objdetect` (HOG/cascade DetectMultiScale, grouping,
+  tracking), `aruco` (ChArUco boards/diamonds/board-pose/calibration), `face`
+  (Facemark/MACE/BIF/HAAR + persistence), `barcode` (QR v1–10 all ECC levels +
+  8 more 1D symbologies), `datamatrix` (C40/Text/X12/EDIFACT/Base256, rectangular
+  & large sizes, structured-append/ECI/GS1), `text` (Neumann–Matas ER NM1/NM2,
+  grouping, SWT, OCR template, beam search), `dnn` (17 more layers + NMSBoxes),
+  `saliency` (Itti-Koch/MBD/frequency-tuned/context-aware/GMR/BMS/HC/RC + eval).
+- Motion/tracking: `video` (ECC alignment, DIS flow, MeanShift/CamShift, PyrLK
+  tracker, stabilizer, MOG2/KNN), `optflow` (TV-L1/DeepFlow/PCAFlow/RLOF/
+  SimpleFlow + .flo I/O), `tracking` (FFT-based MOSSE/DCF/KCF-HOG/CSRT + MIL/
+  Boosting/TLD + MultiTracker), `bgsegm` (MOG/CNT/LSBP/GSOC + shadow).
+- Photo/imaging: `photo` (domain-transform/TV-L1/Poisson-editing/sketch/oil/
+  cartoon), `hdr` (AlignMTB, MergeRobertson, TonemapDurand/Mantiuk, PFM/RGBE
+  I/O), `xphoto` (DCT/BM3D-Wiener/dehaze/FSR/TonemapDurand/color-constancy),
+  `intensity` (Retinex SSR/MSR/MSRCR, AGCWD, tone curve, WLS-BIMEF), `fuzzy`
+  (degree-1 F-transform, multi-step inpaint, fast variants), `bioinspired`
+  (transient-areas segmentation, Bayer mosaic/demosaic, log-polar, param I/O),
+  `dnn_superres` (LapSRN/ESPCN/NEDI/DCCI/IBP + SSIM/benchmark).
+- Analysis/misc: `ml` (RandomForest/AdaBoost/MLP/GMM/kernel-SVM + metrics +
+  persistence), `segmentation` (Felzenszwalb/selective-search/multi-Otsu/exact
+  DT/RAG/livewire/SLIC), `imgprocx` (kernel builders/spatial-gradient/accumulate/
+  EMD/floodfill/tilted-integral), `quality` (VIF/FSIM/VSI/NIQE/PIQE/IW-SSIM/
+  CW-SSIM), `ximgproc` (domain-transform/FGS/adaptive-manifold/weighted-median/
+  Deriche/EdgeBoxes/LSC), `shape` (shape-context+Hungarian+TPS, Hausdorff,
+  EMD-L1, robust fit), `mcc` (CIEDE2000/CIE94/CMC, chromatic adaptation, LCh/xyY,
+  140-patch DigitalSG, poly/root-poly/WLS CCM), `imghash` (Haar-DWT WaveletHash,
+  72-bit Marr–Hildreth, peak-cross-correlation), `stitching` (cyl/spherical
+  warpers, exposure compensation, DP/graph-cut seams, LM bundle adjustment,
+  wave-correct, timelapse, pipeline), `plot` (stem/step/area/box/violin/pie/
+  heatmap/contour/multi-series + 13 colormaps), `videoio` (APNG, MJPEG-in-AVI,
+  image-sequence, CAP_PROP model, adaptive GIF palette).
+
 ## [0.3.0] - 2026-07-12
 ### Added
 - **40 new module subpackages**, each importing only the root `cv` package plus

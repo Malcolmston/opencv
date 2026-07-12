@@ -8,7 +8,8 @@
 //	go run ./examples
 //
 // It writes example_source.png, example_gray.png, example_blur.png,
-// example_canny.png and example_annotated.png.
+// example_canny.png, example_annotated.png, example_contours.png and
+// example_warp.png.
 package main
 
 import (
@@ -51,7 +52,31 @@ func main() {
 		cv.NewScalar(255, 255, 255))
 	write("example_annotated.png", annotated)
 
-	fmt.Println("wrote example_source.png, example_gray.png, example_blur.png, example_canny.png, example_annotated.png")
+	// 6. Contour detection: threshold the grayscale image, find external
+	// contours and draw them (with their bounding boxes) on a black canvas.
+	bin, _ := cv.Threshold(gray, 128, 255, cv.ThreshBinary)
+	contours, _ := cv.FindContours(bin, cv.RetrExternal, cv.ChainApproxSimple)
+	contourVis := cv.NewMat(h, w, 3)
+	cv.DrawContours(contourVis, contours, -1, cv.NewScalar(0, 255, 0), 2)
+	for _, c := range contours {
+		r := cv.BoundingRect(c)
+		cv.Rectangle(contourVis,
+			cv.Point{X: r.X, Y: r.Y},
+			cv.Point{X: r.X + r.Width - 1, Y: r.Y + r.Height - 1},
+			cv.NewScalar(255, 0, 0), 1)
+	}
+	write("example_contours.png", contourVis)
+	fmt.Printf("found %d external contour(s)\n", len(contours))
+
+	// 7. Perspective warp: map the rectangle's four corners to a full-frame
+	// axis-aligned rectangle, straightening it into a bird's-eye view.
+	srcQuad := [4]cv.Point{{X: 40, Y: 30}, {X: 120, Y: 30}, {X: 120, Y: 110}, {X: 40, Y: 110}}
+	dstQuad := [4]cv.Point{{X: 0, Y: 0}, {X: w - 1, Y: 0}, {X: w - 1, Y: h - 1}, {X: 0, Y: h - 1}}
+	m := cv.GetPerspectiveTransform(srcQuad, dstQuad)
+	warped := cv.WarpPerspective(src, m, w, h, cv.InterLinear)
+	write("example_warp.png", warped)
+
+	fmt.Println("wrote example_source.png, example_gray.png, example_blur.png, example_canny.png, example_annotated.png, example_contours.png, example_warp.png")
 }
 
 func write(path string, m *cv.Mat) {

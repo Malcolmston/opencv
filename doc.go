@@ -6,9 +6,9 @@
 // image/color, image/png, image/jpeg, math and friends. It uses no cgo and no
 // third-party dependencies, so it builds and runs anywhere the Go toolchain
 // does. The trade-off is scope: heavyweight machine-vision machinery such as
-// feature descriptors (SIFT/ORB), full contour hierarchies, camera calibration,
-// DNN inference and video I/O are intentionally out of scope. What remains is a
-// faithful, genuinely useful image-processing toolkit.
+// dense feature descriptors (SIFT/ORB), camera calibration (calib3d), DNN
+// inference and video I/O are intentionally out of scope. What remains is a
+// faithful, genuinely useful image-processing and computer-vision toolkit.
 //
 // # The Mat type
 //
@@ -46,6 +46,26 @@
 // pipeline and [MatchTemplate] with [MinMaxLoc]. Drawing primitives ([Line],
 // [Rectangle], [Circle], [Ellipse], [PutText], [Polylines], [FillPoly]) render
 // directly onto a Mat, and [CalcHist]/[EqualizeHist] cover histograms.
+//
+// # Colour, arithmetic and shape analysis
+//
+// [CvtColor] additionally converts between RGB and CIE L*a*b* ([ColorRGB2Lab]),
+// Y'CrCb ([ColorRGB2YCrCb]) and HLS ([ColorRGB2HLS]). Element-wise Mat
+// arithmetic with saturation is available through [Add], [Subtract], [AbsDiff],
+// [AddWeighted], [Multiply], [Divide], the bitwise ops ([BitwiseAnd], [BitwiseOr],
+// [BitwiseXor], [BitwiseNot]), [Min], [Max], [Normalize] and [ConvertScaleAbs].
+// [BilateralFilter] adds edge-preserving smoothing and [Filter2DSep] exposes
+// separable convolution.
+//
+// Structural analysis covers Suzuki-style [FindContours] with retrieval modes
+// and a hierarchy, [DrawContours], [ContourArea], [ArcLength], [BoundingRect],
+// [MinAreaRect], [ConvexHull], [ApproxPolyDP] and [ImageMoments], plus
+// [ConnectedComponents] and [ConnectedComponentsWithStats]. Feature detection
+// provides [CornerHarris], [GoodFeaturesToTrack], [HoughLines], [HoughLinesP],
+// [HoughCircles] and [FASTCorners]. Projective geometry adds
+// [GetPerspectiveTransform] with [WarpPerspective], [Remap], the [PyrDown] /
+// [PyrUp] Gaussian pyramid and [DistanceTransform]. Histogram tooling gains
+// [CalcBackProject], [CompareHist] and [CLAHE].
 //
 // # Errors and panics
 //

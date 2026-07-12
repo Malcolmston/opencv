@@ -72,23 +72,40 @@ func main() {
   `Total`, `Empty`) and standard-library bridges `FromImage` / `Mat.ToImage`.
 - **I/O (PNG + JPEG)** — `ImRead` / `ImWrite` for files and `IMDecode` /
   `IMEncode` for in-memory buffers, via the standard-library codecs.
-- **Color conversions** — `CvtColor` with RGB↔Gray, RGB↔BGR and RGB↔HSV
-  (`ColorRGB2Gray`, `ColorGray2RGB`, `ColorRGB2BGR`, `ColorBGR2RGB`,
-  `ColorBGR2Gray`, `ColorRGB2HSV`, `ColorHSV2RGB`), plus `InRange` masking.
-- **Filtering / convolution** — generic `Filter2D` (`Kernel` / `NewKernel`) and
-  the built-ins on top of it: `Blur`, `BoxFilter`, separable `GaussianBlur`
-  (`GaussianKernel1D`), `MedianBlur`, `Sobel`, `Scharr` and `Laplacian`.
+- **Color conversions** — `CvtColor` with RGB↔Gray, RGB↔BGR, RGB↔HSV, RGB↔Lab,
+  RGB↔YCrCb and RGB↔HLS (`ColorRGB2Gray`, `ColorGray2RGB`, `ColorRGB2BGR`,
+  `ColorBGR2RGB`, `ColorBGR2Gray`, `ColorRGB2HSV`, `ColorHSV2RGB`, `ColorRGB2Lab`,
+  `ColorLab2RGB`, `ColorRGB2YCrCb`, `ColorYCrCb2RGB`, `ColorRGB2HLS`,
+  `ColorHLS2RGB`), plus `InRange` masking.
+- **Filtering / convolution** — generic `Filter2D` (`Kernel` / `NewKernel`),
+  separable `Filter2DSep`, and the built-ins: `Blur`, `BoxFilter`,
+  `GaussianBlur` (`GaussianKernel1D`), `MedianBlur`, edge-preserving
+  `BilateralFilter`, `Sobel`, `Scharr` and `Laplacian`.
+- **Arithmetic & logic** — element-wise `Add`, `Subtract`, `AbsDiff`,
+  `AddWeighted`, `Multiply`, `Divide`, `BitwiseAnd`/`Or`/`Xor`/`Not`, `Min`,
+  `Max`, `Normalize` and `ConvertScaleAbs`, all with saturation.
 - **Thresholding** — fixed and `Otsu` levels through `Threshold`, plus
   `AdaptiveThreshold` (mean and Gaussian).
 - **Morphology** — `Erode`, `Dilate` and `MorphologyEx` (open, close, gradient,
   tophat, blackhat) over structuring elements from `GetStructuringElement`.
 - **Geometric transforms** — `Resize` (nearest / bilinear), `Flip`, `Rotate`,
-  `Transpose`, and affine warping via `WarpAffine` with `GetRotationMatrix2D`.
+  `Transpose`, affine warping via `WarpAffine` / `GetRotationMatrix2D`,
+  projective warping via `GetPerspectiveTransform` / `WarpPerspective`, `Remap`,
+  the `PyrDown` / `PyrUp` Gaussian pyramid and `DistanceTransform`.
+- **Contours & shape** — Suzuki-style `FindContours` (RETR_EXTERNAL/LIST/TREE,
+  CHAIN_APPROX_NONE/SIMPLE with hierarchy), `DrawContours`, `ContourArea`,
+  `ArcLength`, `BoundingRect`, `MinAreaRect`, `ConvexHull`, `ApproxPolyDP` and
+  `ImageMoments`.
+- **Connected components** — `ConnectedComponents` and
+  `ConnectedComponentsWithStats` (union-find, 4/8 connectivity).
+- **Feature detection** — `CornerHarris`, `GoodFeaturesToTrack` (Shi-Tomasi),
+  `HoughLines`, `HoughLinesP`, `HoughCircles` and `FASTCorners`.
 - **Edges & template matching** — a full `Canny` pipeline and `MatchTemplate`
   with `MinMaxLoc`.
 - **Drawing & text** — `Line`, `Rectangle`, `Circle`, `Ellipse`, `Polylines`,
   `FillPoly`, and `PutText` rendered with a built-in bitmap font.
-- **Histograms** — `CalcHist` and `EqualizeHist`.
+- **Histograms** — `CalcHist`, `EqualizeHist`, `CalcBackProject`, `CompareHist`
+  and contrast-limited adaptive equalisation (`CLAHE`).
 
 ## Scope & limits
 
@@ -99,8 +116,8 @@ func main() {
   (matching the `image` package), not OpenCV's native BGR. Use `CvtColor` with
   `ColorRGB2BGR` when you need to interoperate with BGR-oriented code or data.
 - **Deferred.** Heavyweight machine-vision machinery is intentionally out of
-  scope: feature descriptors (SIFT/ORB), full contour hierarchies, camera
-  calibration (calib3d), DNN inference, and video I/O.
+  scope: dense feature descriptors and matching (SIFT/ORB/BRIEF), camera
+  calibration and stereo (calib3d), DNN inference, optical flow and video I/O.
 
 ## Documentation
 

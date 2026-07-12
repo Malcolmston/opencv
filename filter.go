@@ -341,6 +341,89 @@ func Laplacian(src *Mat, ksize int, scale, delta float64) *Mat {
 	return out
 }
 
+// Filter2DSep applies a separable linear filter: src is convolved with the
+// horizontal 1-D kernel kx and the vertical 1-D kernel ky in two passes. This is
+// mathematically equivalent to convolving with the outer product ky·kxᵀ but far
+// cheaper. delta is added before rounding and clamping to [0,255]. Borders are
+// replicated.
+func Filter2DSep(src *Mat, kx, ky []float64, delta float64) *Mat {
+	if len(kx) == 0 || len(ky) == 0 {
+		panic("cv: Filter2DSep requires non-empty kernels")
+	}
+	chans := sepFilterFloat(src, kx, ky)
+	out := NewMat(src.Rows, src.Cols, src.Channels)
+	for c := range chans {
+		for i, v := range chans[c] {
+			out.Data[i*src.Channels+c] = clampToUint8(v + delta + 0.5)
+		}
+	}
+	return out
+}
+
+// BilateralFilter smooths src while preserving edges: each output sample is a
+// weighted average of its neighbours where the weight combines a spatial
+// Gaussian (standard deviation sigmaSpace) with a range Gaussian on the
+// intensity difference (standard deviation sigmaColor). d is the diameter of the
+// neighbourhood in pixels; when d <= 0 it is derived as 2*round(1.5*sigmaSpace)+1.
+// Larger sigmaColor mixes across bigger intensity gaps. Borders are replicated.
+func BilateralFilter(src *Mat, d int, sigmaColor, sigmaSpace float64) *Mat {
+	if sigmaColor <= 0 {
+		sigmaColor = 1
+	}
+	if sigmaSpace <= 0 {
+		sigmaSpace = 1
+	}
+	if d <= 0 {
+		d = 2*int(math.Round(1.5*sigmaSpace)) + 1
+	}
+	if d%2 == 0 {
+		d++
+	}
+	radius := d / 2
+	// Precompute the spatial Gaussian weights.
+	spatial := make([]float64, (2*radius+1)*(2*radius+1))
+	gs2 := 2 * sigmaSpace * sigmaSpace
+	i := 0
+	for dy := -radius; dy <= radius; dy++ {
+		for dx := -radius; dx <= radius; dx++ {
+			spatial[i] = math.Exp(-float64(dx*dx+dy*dy) / gs2)
+			i++
+		}
+	}
+	// Precompute the range Gaussian as a lookup table over intensity diffs.
+	gc2 := 2 * sigmaColor * sigmaColor
+	rangeLUT := make([]float64, 256)
+	for k := 0; k < 256; k++ {
+		rangeLUT[k] = math.Exp(-float64(k*k) / gc2)
+	}
+
+	dst := NewMat(src.Rows, src.Cols, src.Channels)
+	for y := 0; y < src.Rows; y++ {
+		for x := 0; x < src.Cols; x++ {
+			for c := 0; c < src.Channels; c++ {
+				center := int(src.atReplicate(y, x, c))
+				var sum, wsum float64
+				si := 0
+				for dy := -radius; dy <= radius; dy++ {
+					for dx := -radius; dx <= radius; dx++ {
+						v := int(src.atReplicate(y+dy, x+dx, c))
+						diff := v - center
+						if diff < 0 {
+							diff = -diff
+						}
+						w := spatial[si] * rangeLUT[diff]
+						sum += w * float64(v)
+						wsum += w
+						si++
+					}
+				}
+				dst.Data[dst.index(y, x)+c] = clampToUint8(sum/wsum + 0.5)
+			}
+		}
+	}
+	return dst
+}
+
 func requireOdd(ksize int, name string) {
 	if ksize <= 0 || ksize%2 == 0 {
 		panic(fmt.Sprintf("cv: %s requires a positive odd ksize, got %d", name, ksize))

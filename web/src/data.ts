@@ -18,9 +18,11 @@ export const OPENCV: Lib = {
     "Mat type over image, image/color, image/png, image/jpeg and math — no cgo, no third-party dependencies. "+
     "You get the Mat core, PNG/JPEG I/O, colour conversions, filtering and convolution, thresholding, "+
     "morphology, geometric transforms, a full Canny pipeline, template matching, drawing and histograms — "+
-    "an idiomatic, genuinely useful re-implementation of the cv2 essentials. The import path is "+
-    "github.com/malcolmston/opencv, but the package is named cv.",
-  tags:["Mat core","PNG/JPEG I/O","colour conversion","convolution","Otsu threshold","morphology","warpAffine","Canny"],
+    "an idiomatic, genuinely useful re-implementation of the cv2 essentials. On top of that root package "+
+    "sit 40 module subpackages mirroring OpenCV's main and contrib modules — features2d, calib3d, stereo, "+
+    "dnn, tracking, face, aruco, barcode, hdr, stitching and more — each importing only cv and the standard "+
+    "library. The import path is github.com/malcolmston/opencv, but the package is named cv.",
+  tags:["Mat core","PNG/JPEG I/O","colour conversion","convolution","Otsu threshold","morphology","warpAffine","Canny","40 modules","features2d","calib3d","dnn","tracking","hdr","aruco"],
   features:[
     "<code>Mat</code> core — a dense row-major matrix of 8-bit samples with <code>FromImage</code>/<code>ToImage</code> stdlib bridges",
     "PNG + JPEG I/O via <code>ImRead</code>, <code>ImWrite</code>, <code>IMDecode</code> and <code>IMEncode</code>",
@@ -32,6 +34,13 @@ export const OPENCV: Lib = {
     "Edges &amp; matching — a full <code>Canny</code> pipeline and <code>MatchTemplate</code> with <code>MinMaxLoc</code>",
     "Drawing &amp; text — <code>Line</code>, <code>Rectangle</code>, <code>Circle</code>, <code>Ellipse</code>, <code>Polylines</code>, <code>FillPoly</code>, <code>PutText</code>",
     "Histograms — <code>CalcHist</code> and <code>EqualizeHist</code>",
+    "<b>40 module subpackages</b> mirroring OpenCV main + contrib, each importing only <code>cv</code> and the stdlib",
+    "2D features — <code>features2d</code> (ORB/BRIEF/matcher), <code>xfeatures2d</code> (BRISK/AGAST/Star), <code>linedescriptor</code>",
+    "Geometry &amp; 3D — <code>calib3d</code> (homography+RANSAC, solvePnP), <code>stereo</code> (BM/SGBM), <code>rgbd</code>, <code>surface_matching</code> (PPF+ICP)",
+    "Motion &amp; tracking — <code>video</code> (LK/Farnebäck/Kalman), <code>optflow</code>, <code>tracking</code> (KCF/MedianFlow/CamShift), <code>bgsegm</code>",
+    "Detection &amp; recognition — <code>objdetect</code> (HOG/QR), <code>aruco</code>, <code>face</code>, <code>barcode</code>, <code>datamatrix</code>, <code>text</code>, <code>dnn</code>, <code>flann</code>, <code>saliency</code>",
+    "Photo &amp; imaging — <code>photo</code>, <code>hdr</code> (Debevec/Mertens), <code>xphoto</code> (white balance/BM3D), <code>intensity</code>, <code>fuzzy</code>, <code>bioinspired</code>, <code>dnn_superres</code>",
+    "Segmentation, shape &amp; more — <code>segmentation</code> (watershed/GrabCut), <code>shape</code>, <code>ximgproc</code>, <code>stitching</code>, <code>ml</code>, <code>quality</code>, <code>imghash</code>, <code>plot</code>, <code>mcc</code>",
     "Zero dependencies — pure Go standard library, nothing to audit but the toolchain"
   ],
   node_code:

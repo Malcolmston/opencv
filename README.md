@@ -107,6 +107,42 @@ func main() {
 - **Histograms** — `CalcHist`, `EqualizeHist`, `CalcBackProject`, `CompareHist`
   and contrast-limited adaptive equalisation (`CLAHE`).
 
+## Modules
+
+Beyond the root `cv` package, the library ships **40 module subpackages** that
+mirror the layout of OpenCV's main and `contrib` modules. Each imports only the
+root `cv` package and the Go standard library — no cgo, no third-party
+dependencies — and each carries full godoc, deterministic tests and runnable
+examples. Import the ones you need:
+
+```go
+import (
+    cv "github.com/malcolmston/opencv"
+    "github.com/malcolmston/opencv/features2d"
+    "github.com/malcolmston/opencv/calib3d"
+)
+```
+
+- **2D features** — `features2d` (ORB/BRIEF/BFMatcher), `xfeatures2d`
+  (AGAST/BRISK/Star/blob), `linedescriptor` (LSD + LBD).
+- **Geometry & 3D** — `calib3d` (homography+RANSAC, fundamental matrix,
+  solvePnP, triangulate), `stereo` (BM/SGBM), `rgbd` (depth→3D, ICP),
+  `surface_matching` (PPF+ICP), `imgprocx` (affine estimate, Gabor, log-polar).
+- **Motion & tracking** — `video` (LK/Farnebäck/Kalman), `optflow`
+  (Horn–Schunck/DIS), `tracking` (KCF/MedianFlow/CamShift), `bgsegm` (MOG2/KNN).
+- **Detection & recognition** — `objdetect` (HOG/cascade/QR), `aruco`,
+  `face` (Eigen/Fisher/LBPH), `barcode` (QR/EAN-13/Code128), `datamatrix`
+  (ECC200), `text` (MSER), `dnn` (CNN inference), `flann` (ANN), `saliency`.
+- **Photo & imaging** — `photo` (denoise/inpaint/seamless clone), `hdr`
+  (Debevec/Mertens + tonemap), `xphoto` (white balance/BM3D), `intensity`
+  (gamma/BIMEF), `fuzzy` (F-transform), `bioinspired` (retina), `dnn_superres`.
+- **Structured light** — `structured_light` (Gray-code/phase-shift),
+  `phase_unwrapping`.
+- **Segmentation & shape** — `segmentation` (watershed/GrabCut), `shape`
+  (fit line/ellipse, Hu moments), `ximgproc` (guided filter/SLIC), `stitching`.
+- **Analysis & viz** — `ml` (KNN/SVM/tree/k-means), `quality` (PSNR/SSIM),
+  `imghash`, `plot`, `videoio` (GIF), `mcc` (ColorChecker + colour correction).
+
 ## Scope & limits
 
 - **CV_8U only.** Samples are 8-bit unsigned; there is no floating-point or
@@ -115,9 +151,12 @@ func main() {
 - **RGB, not BGR.** By Go convention three-channel data is treated as RGB
   (matching the `image` package), not OpenCV's native BGR. Use `CvtColor` with
   `ColorRGB2BGR` when you need to interoperate with BGR-oriented code or data.
-- **Deferred.** Heavyweight machine-vision machinery is intentionally out of
-  scope: dense feature descriptors and matching (SIFT/ORB/BRIEF), camera
-  calibration and stereo (calib3d), DNN inference, optical flow and video I/O.
+- **Approximations, not trained models.** The module subpackages implement the
+  classical algorithms directly; where OpenCV ships pre-trained weights or model
+  files (deep SISR networks, learning-based white balance, DNN detectors, trained
+  ER/BING classifiers) the Go ports use faithful weight-free approximations and
+  say so in each package's `doc.go`. Every subpackage documents what it covers
+  versus what it defers.
 
 ## Documentation
 

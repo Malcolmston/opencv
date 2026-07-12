@@ -1,0 +1,71 @@
+// Library content for the opencv documentation site. Mirrors the shape used by
+// the malcolmston/go landing site's data.ts so the sibling sites stay in sync.
+export interface Lib {
+  id: string; name: string; icon: string; accent: string; pkg: string; node: string;
+  repo: string; docs: string; tagline: string; blurb: string; tags: string[];
+  features: string[]; node_code: string; go_code: string; integrate: string;
+}
+
+export const NODE_ACCENT = '#8cc84b';
+
+export const OPENCV: Lib = {
+  id:"opencv", name:"opencv", icon:'<i class="fa-solid fa-camera"></i>', accent:"#5cc8ff",
+  pkg:"github.com/malcolmston/opencv", node:"opencv/opencv-python",
+  repo:"https://github.com/malcolmston/opencv", docs:"https://malcolmston.github.io/opencv/",
+  tagline:"Classic OpenCV image processing in Go.",
+  blurb:"A from-scratch, standard-library-only Go port of a useful subset of Python's OpenCV (cv2), focused on "+
+    "classic image processing and computer-vision primitives. Everything is built on the dense row-major "+
+    "Mat type over image, image/color, image/png, image/jpeg and math — no cgo, no third-party dependencies. "+
+    "You get the Mat core, PNG/JPEG I/O, colour conversions, filtering and convolution, thresholding, "+
+    "morphology, geometric transforms, a full Canny pipeline, template matching, drawing and histograms — "+
+    "an idiomatic, genuinely useful re-implementation of the cv2 essentials. The import path is "+
+    "github.com/malcolmston/opencv, but the package is named cv.",
+  tags:["Mat core","PNG/JPEG I/O","colour conversion","convolution","Otsu threshold","morphology","warpAffine","Canny"],
+  features:[
+    "<code>Mat</code> core — a dense row-major matrix of 8-bit samples with <code>FromImage</code>/<code>ToImage</code> stdlib bridges",
+    "PNG + JPEG I/O via <code>ImRead</code>, <code>ImWrite</code>, <code>IMDecode</code> and <code>IMEncode</code>",
+    "Colour conversions through <code>CvtColor</code> (RGB↔Gray, RGB↔BGR, RGB↔HSV and more)",
+    "Filtering &amp; convolution — <code>Filter2D</code>, <code>Blur</code>, <code>GaussianBlur</code>, <code>MedianBlur</code>, <code>Sobel</code>, <code>Scharr</code>, <code>Laplacian</code>",
+    "Thresholding with automatic <code>Otsu</code> levels plus <code>AdaptiveThreshold</code>",
+    "Morphology — <code>Erode</code>, <code>Dilate</code>, <code>MorphologyEx</code> over <code>GetStructuringElement</code> kernels",
+    "Geometric transforms — <code>Resize</code>, <code>Flip</code>, <code>Rotate</code>, <code>Transpose</code>, <code>WarpAffine</code> + <code>GetRotationMatrix2D</code>",
+    "Edges &amp; matching — a full <code>Canny</code> pipeline and <code>MatchTemplate</code> with <code>MinMaxLoc</code>",
+    "Drawing &amp; text — <code>Line</code>, <code>Rectangle</code>, <code>Circle</code>, <code>Ellipse</code>, <code>Polylines</code>, <code>FillPoly</code>, <code>PutText</code>",
+    "Histograms — <code>CalcHist</code> and <code>EqualizeHist</code>",
+    "Zero dependencies — pure Go standard library, nothing to audit but the toolchain"
+  ],
+  node_code:
+`import cv2
+
+img = cv2.imread("in.png")
+gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+blurred = cv2.GaussianBlur(gray, (5, 5), 1.4)
+edges = cv2.Canny(blurred, 50, 150)
+cv2.imwrite("edges.png", edges)`,
+  go_code:
+`import "github.com/malcolmston/opencv"
+
+// The import path is .../opencv, but the package is named cv.
+img, _ := cv.ImRead("in.png")
+gray := cv.CvtColor(img, cv.ColorRGB2Gray)
+blurred := cv.GaussianBlur(gray, 5, 1.4)
+edges := cv.Canny(blurred, 50, 150)
+cv.ImWrite("edges.png", edges)`,
+  integrate:
+`<span class="tok-c">// Threshold with an automatically chosen Otsu level, then clean up</span>
+<span class="tok-c">// small specks with a morphological opening.</span>
+bin, level := cv.Threshold(gray, 0, 255, cv.ThreshBinary|cv.ThreshOtsu)
+kernel := cv.GetStructuringElement(cv.MorphRect, 3, 3)
+opened := cv.MorphologyEx(bin, kernel, cv.MorphOpen, 1)
+
+<span class="tok-c">// Rotate 30° about the centre via an affine warp.</span>
+rot := cv.GetRotationMatrix2D(float64(img.Cols)/2, float64(img.Rows)/2, 30, 1.0)
+turned := cv.WarpAffine(img, rot, img.Cols, img.Rows, cv.InterLinear)
+
+<span class="tok-c">// Locate a template and draw a green box + label around the hit.</span>
+res := cv.MatchTemplate(gray, templ, cv.TmCcoeffNormed)
+_, _, _, _, maxX, maxY := cv.MinMaxLoc(res)
+green := cv.NewScalar(0, 255, 0)
+cv.Rectangle(img, cv.Point{X: maxX, Y: maxY}, cv.Point{X: maxX + templ.Cols, Y: maxY + templ.Rows}, green, 2)
+cv.PutText(img, "match", cv.Point{X: maxX, Y: maxY - 6}, 1, green)`
+};

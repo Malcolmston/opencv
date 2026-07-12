@@ -105,7 +105,7 @@ func main() {
 ## Documentation
 
 - Full API reference on [pkg.go.dev](https://pkg.go.dev/github.com/malcolmston/opencv).
-- Docs site (forthcoming): <https://malcolmston.github.io/opencv/>.
+- Docs site: <https://malcolmston.github.io/opencv/>.
 
 ## License
 

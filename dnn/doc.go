@@ -24,14 +24,29 @@
 // single method Forward(inputs []*Tensor) []*Tensor. The provided layers are:
 //
 //   - [Conv2D] — 2-D convolution with stride, zero padding and dilation.
+//   - [ConvTranspose2D] — transposed convolution (deconvolution) for upsampling.
 //   - [MaxPool2D], [AvgPool2D] — spatial downsampling.
-//   - [ReLU], [LeakyReLU], [Sigmoid], [Tanh] — elementwise activations.
+//   - [GlobalAvgPool] — collapse each channel's spatial extent to a scalar.
+//   - [ReLU], [LeakyReLU], [PReLU], [ELU], [Sigmoid], [Tanh], [Mish], [Swish]
+//     (SiLU) — elementwise activations.
 //   - [FullyConnected] (aliased [Dense]) — inner-product layer.
 //   - [Softmax] — probability normalization along an axis.
 //   - [BatchNorm] — inference-time per-channel normalization.
-//   - [Flatten] — collapse spatial/channel axes to a feature vector.
+//   - [LRN] — local response normalization (across- or within-channel).
+//   - [Dropout] — inference-time passthrough (training-only regularizer).
+//   - [Flatten], [Reshape] — reinterpret the shape of a tensor.
+//   - [Permute], [Transpose] — reorder axes, moving data.
+//   - [Slice] — extract a strided sub-range along one axis.
+//   - [Padding] — enlarge a tensor with a constant-valued border.
+//   - [Upsample] — nearest or bilinear spatial magnification.
+//   - [ArgMax] — reduce an axis to the index of its maximum.
 //   - [Concat] — join tensors along an axis.
 //   - [Add] — elementwise residual sum.
+//   - [Eltwise] — elementwise sum/product/max reduction across inputs.
+//
+// Two free helpers support detection and classification post-processing:
+// [NMSBoxes] applies greedy non-maximum suppression to scored [Box]es, and
+// [ClassifyTopK] returns the highest-scoring classes of an output vector.
 //
 // A [Net] chains layers into a linear pipeline: [Net.Forward] feeds the output
 // of each layer into the next and returns the final tensor. Assemble one

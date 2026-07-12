@@ -32,7 +32,7 @@
 //
 // # The indices
 //
-// Four index types are provided:
+// The following index types are provided:
 //
 //   - [LinearIndex] is the exact brute-force baseline: it scans every point.
 //     Generic over the element type, it is constructed with [NewLinearIndex]
@@ -58,13 +58,45 @@
 //     matching bucket of every table and ranks them exactly. It excels at
 //     finding a near-exact binary match among many distractors.
 //
+//   - [KDForestIndex] is a randomized multi-tree k-d forest over [][]float64.
+//     Each tree splits on a dimension drawn randomly from the few of highest
+//     variance, so the trees are decorrelated and a shared best-bin-first
+//     traversal explores complementary regions. It is exact with MaxChecks == 0
+//     and trades recall for speed under a positive budget — the classic FLANN
+//     structure for moderate-to-high dimension.
+//
+//   - [HierarchicalClusteringIndex] recursively clusters [][]float64 around
+//     randomly chosen data points, so it works under any [DistanceFunc], not
+//     just L2 (see [NewHierarchicalClusteringIndexFunc]). It is exact with
+//     Checks == 0.
+//
+//   - [CompositeIndex] queries a k-d forest and a [KMeansIndex] together and
+//     merges their candidates, recovering points either structure alone would
+//     miss.
+//
+//   - [AutotunedIndex] picks a structure and check budget automatically to reach
+//     a requested precision, measured against exact search on a sample of the
+//     data.
+//
+// [KnnSearchBatch] and [RadiusSearchBatch] answer many queries in one call, and
+// [Recall] and [Precision] score any approximate index against an exact one.
+//
 // # Distances
 //
 // [DistL2] is the Euclidean distance between two float vectors and [DistHamming]
-// is the number of differing bits between two byte vectors. Both are exported
-// so callers can score candidates themselves, and both are expressed in the
-// same units the corresponding index reports and the radius of RadiusSearch is
-// measured in.
+// is the number of differing bits between two byte vectors. Additional float
+// distances are provided: [DistL1] (Manhattan), [DistMinkowski] (order-p, with
+// the [MinkowskiDist] constructor for a bound [DistanceFunc]), [DistChiSquare]
+// (histogram dissimilarity), [DistHellinger] and [DistCosine]. All are exported
+// so callers can score candidates themselves, and each is expressed in the same
+// units the index using it reports and the radius of RadiusSearch is measured
+// in.
+//
+// # Persistence
+//
+// [KDForestIndex] and [AutotunedIndex] serialize through encoding/gob; the
+// [Save] and [Load] helpers wrap an index to and from any io.Writer/io.Reader,
+// and a reloaded index answers queries identically to the original.
 //
 // # Determinism
 //
@@ -85,7 +117,8 @@
 //
 // # Not implemented
 //
-// The following parts of OpenCV's flann are intentionally out of scope:
-// autotuned index selection, composite and randomized multi-tree k-d forests,
-// and on-disk index serialization.
+// The following parts of OpenCV's flann remain out of scope: incremental
+// addition or removal of points from a built index, GPU acceleration, and the
+// on-disk format of the original C++ library (this package serializes with Go's
+// own encoding/gob instead, via [Save] and [Load]).
 package flann

@@ -35,7 +35,7 @@
 //
 // # Models
 //
-// Four models are provided, mirroring the OpenCV classes of the same name:
+// Eight models are provided, mirroring the OpenCV classes of the same name:
 //
 //   - [BackgroundSubtractorMOG2] — the adaptive Gaussian-mixture model of
 //     Zivkovic. Every pixel keeps a small set of weighted Gaussians; each frame
@@ -43,15 +43,44 @@
 //     weights adapt, and the pixel is background when its match belongs to the
 //     high-weight "background" Gaussians. Handles multi-modal backgrounds and
 //     optional shadow detection.
+//   - [BackgroundSubtractorMOG] — the original Gaussian-mixture model of
+//     KaewTraKulPong and Bowden, MOG2's lighter predecessor: a fixed number of
+//     components matched with a plain standard-deviation gate, with optional
+//     shadow detection.
 //   - [BackgroundSubtractorKNN] — a non-parametric K-nearest-neighbours model.
 //     Every pixel remembers a bank of recent samples; a pixel is background when
 //     enough stored samples lie within a distance threshold of the observation.
-//   - [RunningAverage] — the simplest model: an exponential moving-average
-//     background image thresholded against the absolute frame difference.
 //   - [BackgroundSubtractorGMG] — the Bayesian per-pixel model of Godbehere,
 //     Matsukawa and Goldberg. Each pixel builds a decaying histogram of observed
 //     values and flags observations whose posterior background probability is
 //     too low, after an initial learning period.
+//   - [BackgroundSubtractorCNT] — the fast counter-based model: it counts how
+//     many consecutive frames a pixel has held its value and trusts it as
+//     background once that run is long enough, optionally remembering the last
+//     trusted value for instant re-recognition.
+//   - [BackgroundSubtractorLSBP] — the Local SVD Binary Pattern model of Guo et
+//     al., a ViBe-style sample consensus that pairs each pixel's intensity with
+//     an illumination-robust texture descriptor derived from the local singular
+//     values.
+//   - [BackgroundSubtractorGSOC] — a sample-consensus model with spatial
+//     propagation and static-foreground absorption, so stationary objects melt
+//     into the background while movers keep standing out.
+//   - [RunningAverage] — the simplest model: an exponential moving-average
+//     background image thresholded against the absolute frame difference.
+//
+// The sample-consensus models ([BackgroundSubtractorLSBP] and
+// [BackgroundSubtractorGSOC]) perform pseudo-random sample replacement seeded
+// from an exported Seed field, so they remain fully deterministic.
+//
+// # Shadow detection
+//
+// The mixture and sample-consensus models embed [ShadowParams], exposing
+// DetectShadows, ShadowValue and ShadowThreshold fields plus OpenCV-style
+// getters and setters (SetShadowValue, SetShadowThreshold, …). When enabled, a
+// pixel darker than the modelled background but no darker than ShadowThreshold
+// times its brightness is reported as [ShadowValue] rather than
+// [ForegroundValue]. The existing subtractors also gain OpenCV-style parameter
+// accessors (SetHistory, SetVarThreshold, SetDist2Threshold, …).
 //
 // # Morphological cleanup
 //
@@ -60,7 +89,17 @@
 // morphological opening (erosion then dilation, via [cv.MorphologyEx] with
 // [cv.MorphOpen]) over a k×k rectangular structuring element on the mask before
 // returning it, removing specks smaller than the kernel. The same operation is
-// available directly as [CleanupMask].
+// available directly as [CleanupMask]; [CloseMask] performs the complementary
+// closing (filling interior holes) and [RefineMask] runs an opening followed by
+// a closing in one call.
+//
+// # Synthetic sequences
+//
+// [SyntheticSequenceGenerator] manufactures reproducible test footage — a small
+// object sliding over a static background with additive Gaussian noise — and
+// returns the exact ground-truth foreground mask for every frame, which is the
+// standard way to exercise and score a [BackgroundSubtractor] without real
+// video.
 //
 // # Determinism
 //

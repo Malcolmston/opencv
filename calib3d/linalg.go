@@ -221,7 +221,12 @@ func svd3(a [3][3]float64) (u [3][3]float64, s [3]float64, v [3][3]float64) {
 	for c := 0; c < 3; c++ {
 		vc := [3]float64{v[0][c], v[1][c], v[2][c]}
 		av := matVec3(a, vc)
-		if s[c] > 1e-12 {
+		// Use a threshold relative to the largest singular value so that a
+		// numerically-tiny singular value (e.g. the structural zero of an
+		// essential matrix, which survives as ~1e-9 after normalization) is
+		// treated as degenerate and its U column is completed rather than being
+		// recovered as A·v/s ≈ 0/0.
+		if s[c] > 1e-12 && s[c] > 1e-6*s[0] {
 			for r := 0; r < 3; r++ {
 				u[r][c] = av[r] / s[c]
 			}

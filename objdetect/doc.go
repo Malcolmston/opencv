@@ -19,7 +19,10 @@
 // or set the [Size] fields directly. [HOGDescriptor.Compute] returns the
 // descriptor for a single detection window; [HOGDescriptor.DetectMultiScale]
 // slides that window over a downscaling image pyramid and scores each position
-// with a linear SVM.
+// with a linear SVM. [HOGDescriptor.DetectMultiScaleWeights] additionally
+// returns each raw window's SVM score, [HOGDescriptor.ComputeGradient] exposes
+// the per-pixel gradient field, and [HOGDescriptor.DefaultPeopleDetector]
+// supplies a ready-to-use (approximate) pedestrian weight vector.
 //
 // The pipeline is the textbook one: per-pixel gradient magnitude and unsigned
 // orientation (a centred [-1,0,1] difference), accumulation of magnitude into
@@ -46,12 +49,35 @@
 // third-party cascade are not guaranteed to match OpenCV bit-for-bit — see the
 // deferred notes on [CascadeClassifier].
 //
+// # LBP cascades and soft cascades
+//
+// [LBPCascadeClassifier] parses OpenCV's featureType-LBP cascades and evaluates
+// them by reading a 3×3 grid of integral-image cell sums into an 8-bit Local
+// Binary Pattern code and looking it up in a per-classifier 256-bit subset;
+// [ComputeLBP] exposes the underlying LBP code image as a texture descriptor.
+// [SoftCascade] is a soft-cascade detector that flattens the staged ensemble
+// into a single additive score with a per-weak rejection trace, so a window can
+// be discarded after any weak classifier (early exit); convert a loaded Haar
+// cascade with [CascadeClassifier.ToSoftCascade].
+//
+// # Grouping, non-maximum suppression and tracking
+//
+// [GroupRectangles] and [GroupRectanglesWeights] cluster overlapping detections
+// with OpenCV's eps/minNeighbors rule; [NMSBoxes] and [SoftNMSBoxes] apply
+// greedy and Gaussian non-maximum suppression to scored boxes, with [RectIoU]
+// as the shared overlap metric. [DetectionBasedTracker] wraps any [Detector]
+// (the Haar, LBP and soft cascades all qualify) and follows objects across
+// frames with stable identities by intersection-over-union association.
+//
 // # QR-code finder patterns
 //
 // [QRCodeDetector.Detect] locates the three square finder patterns of a QR
 // code by scanning rows and columns for the characteristic
 // 1:1:3:1:1 dark:light:dark:light:dark run-length ratio and clustering the
 // confirmed centres. It returns the three pattern centres as [cv.Point]s.
+// [QRCodeDetector.DetectFinderPatterns] returns every located finder pattern,
+// and [QRCodeDetector.DetectMulti] groups them into the quadrilaterals of
+// multiple QR symbols by matching right-angle, equal-leg finder triples.
 // Full symbol decoding (alignment, sampling, Reed–Solomon) is deferred; see
 // [QRCodeDetector].
 //

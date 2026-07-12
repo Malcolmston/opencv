@@ -26,9 +26,23 @@
 //   - [Undistort] removes lens distortion from an image by inverse mapping and
 //     bilinear resampling.
 //   - [SolvePnPPlanar] recovers camera pose from a planar object via its
-//     object-to-image homography.
+//     object-to-image homography, and [SolvePnP] / [SolvePnPRansac] recover pose
+//     for general (planar or non-coplanar) objects, the latter robustly against
+//     outliers.
 //   - [TriangulatePoints] reconstructs 3D points from two views by linear
 //     triangulation.
+//   - [CalibrateCamera] performs full intrinsic calibration from planar views
+//     with Zhang's method (including radial distortion and an RMS reprojection
+//     error), and [StereoCalibrate] recovers the relative pose of a stereo rig.
+//   - [FindEssentialMat], [DecomposeEssentialMat] and [RecoverPose] handle
+//     calibrated two-view geometry; [DecomposeHomographyMat] factors a
+//     plane-induced homography into motion and plane normal candidates.
+//   - [FindChessboardCorners] and [DrawChessboardCorners] detect and visualise a
+//     chessboard calibration target.
+//   - [StereoRectify], [GetOptimalNewCameraMatrix] and [InitUndistortRectifyMap]
+//     provide the rectification and undistortion-map machinery.
+//   - [ComputeCorrespondEpilines] and the [ConvertPointsToHomogeneous] /
+//     [ConvertPointsFromHomogeneous] helpers round out the small utilities.
 //
 // The [CameraMatrix] and [DistCoeffs] helper types package the pinhole
 // intrinsics and distortion coefficients and convert to the plain [3][3]float64
@@ -44,15 +58,17 @@
 //
 // # Determinism
 //
-// The RANSAC path of [FindHomography] seeds its own pseudo-random generator with
-// a fixed constant, so results are fully reproducible across runs — a deliberate
-// difference from OpenCV.
+// The RANSAC paths of [FindHomography] and [SolvePnPRansac] seed their own
+// pseudo-random generators with fixed constants, so results are fully
+// reproducible across runs — a deliberate difference from OpenCV.
 //
 // # Deferred
 //
-// Out of scope for this version: full non-planar iterative PnP (only the planar
-// homography-based pose is provided), essential-matrix decomposition and pose
-// recovery, stereo rectification and block-matching disparity, fisheye and
-// omnidirectional models, bundle adjustment, and the full intrinsic calibration
-// pipeline (calibrateCamera). These build naturally on the primitives here.
+// Out of scope for this version: iterative non-linear refinement / bundle
+// adjustment (the intrinsic and extrinsic estimates are closed-form and linear,
+// not Levenberg–Marquardt-polished as in OpenCV), tangential-distortion
+// estimation during calibration (only the leading radial terms k1, k2 are fit),
+// block-matching and semi-global disparity computation, fisheye and
+// omnidirectional camera models, and charuco/circle-grid target detection. These
+// build naturally on the primitives here.
 package calib3d

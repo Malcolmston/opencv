@@ -6,10 +6,14 @@
 // [github.com/malcolmston/opencv] package. There is no cgo and there are no
 // third-party dependencies.
 //
-// Face *detection* (finding faces in an image) is a separate concern and lives
-// in the objdetect subpackage as a Haar cascade classifier; this package
-// assumes you already have cropped face images and focuses on identifying whose
-// face each one is.
+// Beyond recognition the package now also provides a self-contained,
+// integral-image Haar face *detector* ([GetFacesHAAR]), a trainable facial
+// *landmark* localiser in the FacemarkLBF spirit ([FacemarkLBF]), a
+// biologically-inspired feature descriptor ([BIF]) and a Minimum Average
+// Correlation Energy filter ([MACE]) — so a full pipeline (detect, align by
+// landmarks, describe, verify or identify) can be built without leaving this
+// package. The objdetect subpackage still hosts a general Haar cascade
+// classifier for production detection.
 //
 // # The recognizer interface
 //
@@ -62,11 +66,49 @@
 // Mat two pixels smaller in each dimension, since the pattern is undefined on
 // the border.
 //
+// The extended family adds [LBPCircular], which samples any number of neighbours
+// (up to eight) on a circle of arbitrary radius with bilinear interpolation, and
+// [LBPUniformRotInvariant], the rotation-invariant uniform ("riu2") operator
+// whose labels (0–9) are unchanged by in-plane rotation of the texture.
+//
+// # Persistence, thresholds and richer prediction
+//
+// Every recognizer can be serialised to and from an [io.Writer]/[io.Reader] with
+// [encoding/gob] via its Save/Load methods; a round trip reproduces predictions
+// exactly. SetThreshold/GetThreshold set a maximum acceptable match distance,
+// beyond which the threshold-aware PredictThreshold methods return [Unknown]
+// rather than a spurious label. PredictCollect exposes the full, distance-sorted
+// ranking of training samples behind a plain Predict, for k-nearest-neighbour
+// voting or confidence analysis. The Eigenfaces and Fisherfaces subspaces are
+// exposed as vectors and as renderable images (EigenVectors, MeanFace,
+// EigenFaceImage, DiscriminantAxes, FisherFaceImage).
+//
+// # Detection, landmarks, descriptors and correlation filters
+//
+//   - [GetFacesHAAR] detects upright, face-like regions with a fixed set of
+//     Haar-like features evaluated in O(1) over an integral image, across scales
+//     and positions, with non-maximum suppression.
+//
+//   - [FacemarkLBF] localises facial landmarks inside a face rectangle using a
+//     Supervised Descent cascade of ridge regressors over shape-indexed local
+//     features, converging from a learned mean shape toward the true landmarks.
+//
+//   - [BIF] computes Biologically Inspired Features: a Gabor filter bank pooled
+//     across scale bands and a spatial grid into a compact, contrast-normalised
+//     descriptor.
+//
+//   - [MACE] synthesises a Minimum Average Correlation Energy filter from one
+//     subject's images and verifies a query by the peak-to-sidelobe ratio of its
+//     correlation output, using a from-scratch 2D discrete Fourier transform.
+//
 // # Determinism
 //
-// Nothing in this package uses randomness: training and prediction are fully
-// deterministic functions of their inputs, so repeated runs produce identical
-// results. There is no hidden global state.
+// Nothing in this package uses randomness: training and prediction (including
+// landmark fitting, detection, BIF and MACE) are fully deterministic functions
+// of their inputs, so repeated runs produce identical results. The only global
+// state is an internal side table that records each recognizer's optional
+// recognition threshold, keyed by the recognizer, and it does not affect
+// determinism.
 //
 // # Relationship to the root package
 //
@@ -76,7 +118,10 @@
 //
 // # Deferred
 //
-// The following members of OpenCV's face module are intentionally out of scope:
-// facial-landmark models (FacemarkLBF, FacemarkAAM, FacemarkKazemi) and deep
-// face embeddings / DNN-based recognition. Face detection remains in objdetect.
+// The following members of OpenCV's face module remain out of scope: the
+// active-appearance and Kazemi landmark models (FacemarkAAM, FacemarkKazemi;
+// the FacemarkLBF-style regression cascade is provided by [FacemarkLBF]) and
+// deep face embeddings / DNN-based recognition. The general trained Haar cascade
+// classifier remains in objdetect; [GetFacesHAAR] here is a self-contained,
+// model-free detector rather than a cascade loader.
 package face

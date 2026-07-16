@@ -19,10 +19,12 @@ export const OPENCV: Lib = {
     "You get the Mat core, PNG/JPEG I/O, colour conversions, filtering and convolution, thresholding, "+
     "morphology, geometric transforms, a full Canny pipeline, template matching, drawing and histograms — "+
     "an idiomatic, genuinely useful re-implementation of the cv2 essentials. On top of that root package "+
-    "sit 40 module subpackages mirroring OpenCV's main and contrib modules — features2d, calib3d, stereo, "+
-    "dnn, tracking, face, aruco, barcode, hdr, stitching and more — each importing only cv and the standard "+
-    "library. The import path is github.com/malcolmston/opencv, but the package is named cv.",
-  tags:["Mat core","PNG/JPEG I/O","colour conversion","convolution","Otsu threshold","morphology","warpAffine","Canny","40 modules","features2d","calib3d","dnn","tracking","hdr","aruco"],
+    "sit 57 packages (~5,300 functions) mirroring OpenCV's main, contrib and — via CPU-backed shims — cuda "+
+    "modules: features2d/xfeatures2d, calib3d/stereo/rgbd, dnn, tracking/optflow/video, face/aruco/barcode, "+
+    "photo/hdr/xphoto, stitching, ml, a lazy-graph G-API, and a full cuda* family that ports OpenCV's GPU "+
+    "API to the CPU. Each imports only cv and the standard library. The import path is "+
+    "github.com/malcolmston/opencv, but the package is named cv.",
+  tags:["Mat core","PNG/JPEG I/O","colour conversion","convolution","Otsu threshold","morphology","warpAffine","Canny","57 packages","features2d","calib3d","dnn","tracking","G-API","cuda* (CPU)","stitching"],
   features:[
     "<code>Mat</code> core — a dense row-major matrix of 8-bit samples with <code>FromImage</code>/<code>ToImage</code> stdlib bridges",
     "PNG + JPEG I/O via <code>ImRead</code>, <code>ImWrite</code>, <code>IMDecode</code> and <code>IMEncode</code>",
@@ -34,13 +36,15 @@ export const OPENCV: Lib = {
     "Edges &amp; matching — a full <code>Canny</code> pipeline and <code>MatchTemplate</code> with <code>MinMaxLoc</code>",
     "Drawing &amp; text — <code>Line</code>, <code>Rectangle</code>, <code>Circle</code>, <code>Ellipse</code>, <code>Polylines</code>, <code>FillPoly</code>, <code>PutText</code>",
     "Histograms — <code>CalcHist</code> and <code>EqualizeHist</code>",
-    "<b>40 module subpackages</b> mirroring OpenCV main + contrib, each importing only <code>cv</code> and the stdlib",
-    "2D features — <code>features2d</code> (ORB/BRIEF/matcher), <code>xfeatures2d</code> (BRISK/AGAST/Star), <code>linedescriptor</code>",
-    "Geometry &amp; 3D — <code>calib3d</code> (homography+RANSAC, solvePnP), <code>stereo</code> (BM/SGBM), <code>rgbd</code>, <code>surface_matching</code> (PPF+ICP)",
-    "Motion &amp; tracking — <code>video</code> (LK/Farnebäck/Kalman), <code>optflow</code>, <code>tracking</code> (KCF/MedianFlow/CamShift), <code>bgsegm</code>",
-    "Detection &amp; recognition — <code>objdetect</code> (HOG/QR), <code>aruco</code>, <code>face</code>, <code>barcode</code>, <code>datamatrix</code>, <code>text</code>, <code>dnn</code>, <code>flann</code>, <code>saliency</code>",
-    "Photo &amp; imaging — <code>photo</code>, <code>hdr</code> (Debevec/Mertens), <code>xphoto</code> (white balance/BM3D), <code>intensity</code>, <code>fuzzy</code>, <code>bioinspired</code>, <code>dnn_superres</code>",
-    "Segmentation, shape &amp; more — <code>segmentation</code> (watershed/GrabCut), <code>shape</code>, <code>ximgproc</code>, <code>stitching</code>, <code>ml</code>, <code>quality</code>, <code>imghash</code>, <code>plot</code>, <code>mcc</code>",
+    "<b>57 packages · ~5,300 functions</b> mirroring OpenCV main + contrib + cuda, each importing only <code>cv</code> and the stdlib",
+    "2D features — <code>features2d</code> (ORB/SIFT/KAZE/AKAZE/matcher/BOW), <code>xfeatures2d</code> (FREAK/DAISY/SURF-lite), <code>flann</code>, <code>linedescriptor</code>",
+    "Geometry &amp; 3D — <code>calib3d</code> (calibrate/stereo/solvePnP/essential), <code>stereo</code> (8-path SGM), <code>rgbd</code> (ICP/odometry/TSDF), <code>surface_matching</code>, <code>ccalib</code>, <code>rapid</code>",
+    "Motion &amp; tracking — <code>video</code> (LK/Kalman/ECC/DIS), <code>optflow</code> (TV-L1/DeepFlow/RLOF), <code>tracking</code> (MOSSE/CSRT/TLD), <code>bgsegm</code>, <code>videostab</code>",
+    "Detection &amp; recognition — <code>objdetect</code>, <code>aruco</code> (+ChArUco), <code>face</code> (+Facemark/MACE), <code>barcode</code> (QR v1–10), <code>datamatrix</code>, <code>text</code> (ER/SWT/OCR), <code>dnn</code>, <code>saliency</code>, <code>xobjdetect</code>",
+    "Photo &amp; imaging — <code>photo</code>, <code>hdr</code> (AlignMTB/tonemap), <code>xphoto</code> (BM3D/dehaze), <code>intensity</code> (Retinex/BIMEF), <code>fuzzy</code>, <code>bioinspired</code>, <code>dnn_superres</code>",
+    "Segmentation, shape &amp; more — <code>segmentation</code> (Felzenszwalb/livewire), <code>shape</code> (shape-context/TPS), <code>ximgproc</code> (EdgeBoxes/SLIC), <code>stitching</code>, <code>hfs</code>, <code>ml</code>, <code>quality</code>, <code>plot</code>, <code>mcc</code>",
+    "<b>G-API</b> — <code>gapi</code>, a lazy computation-graph API that compiles a pipeline once and runs it bit-identically to the eager path",
+    "<b>CUDA-family (CPU-backed)</b> — <code>cudaarithm</code>/<code>cudaimgproc</code>/<code>cudafilters</code>/<code>cudawarping</code>/… mirror OpenCV's GPU API (same <code>GpuMat</code>/<code>Stream</code>), running on the CPU — parity, not acceleration",
     "Zero dependencies — pure Go standard library, nothing to audit but the toolchain"
   ],
   node_code:

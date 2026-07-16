@@ -109,11 +109,12 @@ func main() {
 
 ## Modules
 
-Beyond the root `cv` package, the library ships **40 module subpackages** that
-mirror the layout of OpenCV's main and `contrib` modules. Each imports only the
-root `cv` package and the Go standard library — no cgo, no third-party
-dependencies — and each carries full godoc, deterministic tests and runnable
-examples. Import the ones you need:
+Beyond the root `cv` package, the library ships **57 packages** that mirror the
+layout of OpenCV's main, `contrib` and (via CPU-backed shims) `cuda` modules —
+around **5,300 exported functions** in total. Each imports only the root `cv`
+package and the Go standard library — no cgo, no third-party dependencies — and
+each carries full godoc, deterministic tests and runnable examples (80–100 %
+statement coverage). Import the ones you need:
 
 ```go
 import (
@@ -123,25 +124,50 @@ import (
 )
 ```
 
-- **2D features** — `features2d` (ORB/BRIEF/BFMatcher), `xfeatures2d`
-  (AGAST/BRISK/Star/blob), `linedescriptor` (LSD + LBD).
-- **Geometry & 3D** — `calib3d` (homography+RANSAC, fundamental matrix,
-  solvePnP, triangulate), `stereo` (BM/SGBM), `rgbd` (depth→3D, ICP),
-  `surface_matching` (PPF+ICP), `imgprocx` (affine estimate, Gabor, log-polar).
-- **Motion & tracking** — `video` (LK/Farnebäck/Kalman), `optflow`
-  (Horn–Schunck/DIS), `tracking` (KCF/MedianFlow/CamShift), `bgsegm` (MOG2/KNN).
-- **Detection & recognition** — `objdetect` (HOG/cascade/QR), `aruco`,
-  `face` (Eigen/Fisher/LBPH), `barcode` (QR/EAN-13/Code128), `datamatrix`
-  (ECC200), `text` (MSER), `dnn` (CNN inference), `flann` (ANN), `saliency`.
-- **Photo & imaging** — `photo` (denoise/inpaint/seamless clone), `hdr`
-  (Debevec/Mertens + tonemap), `xphoto` (white balance/BM3D), `intensity`
-  (gamma/BIMEF), `fuzzy` (F-transform), `bioinspired` (retina), `dnn_superres`.
-- **Structured light** — `structured_light` (Gray-code/phase-shift),
-  `phase_unwrapping`.
-- **Segmentation & shape** — `segmentation` (watershed/GrabCut), `shape`
-  (fit line/ellipse, Hu moments), `ximgproc` (guided filter/SLIC), `stitching`.
-- **Analysis & viz** — `ml` (KNN/SVM/tree/k-means), `quality` (PSNR/SSIM),
-  `imghash`, `plot`, `videoio` (GIF), `mcc` (ColorChecker + colour correction).
+- **2D features** — `features2d` (ORB/BRIEF/SIFT/KAZE/AKAZE/BFMatcher/FLANN/BOW),
+  `xfeatures2d` (FREAK/DAISY/LATCH/SURF-lite/BEBLID + matchGMS), `flann`
+  (KD-tree/k-means/LSH/hierarchical/autotuned ANN), `linedescriptor` (LSD/EDLines
+  + LBD + LSH matcher).
+- **Geometry & 3D** — `calib3d` (calibrate/stereo-calibrate/rectify/solvePnP/
+  essential/fundamental/homography/chessboard), `stereo` (BM/SGBM/8-path-SGM/
+  census/WLS), `rgbd` (depth→3D, ICP, RGBD odometry, TSDF), `surface_matching`
+  (PPF + KD-tree ICP), `structured_light`, `phase_unwrapping`, `ccalib`
+  (omnidirectional camera), `rapid` (3D pose tracking), `imgprocx` (affine
+  estimate, Gabor, log-polar, EMD).
+- **Motion & tracking** — `video` (LK/Farnebäck/Kalman/ECC/DIS/stabilizer),
+  `optflow` (TV-L1/DeepFlow/PCAFlow/RLOF/SimpleFlow), `tracking` (MOSSE/DCF/
+  KCF-HOG/CSRT/MIL/Boosting/TLD/MultiTracker), `bgsegm` (MOG/MOG2/KNN/CNT/LSBP/
+  GSOC), `videostab` (global motion + trajectory smoothing + inpaint/deblur).
+- **Detection & recognition** — `objdetect` (HOG/cascade/QR + NMS), `aruco`
+  (markers + ChArUco boards/diamonds), `face` (Eigen/Fisher/LBPH + Facemark/
+  MACE/BIF), `barcode` (QR v1–10 + 8 1-D symbologies), `datamatrix` (full ECC200
+  codec), `text` (MSER/ER/SWT/OCR + beam search), `dnn` (feed-forward CNN
+  inference), `saliency` (spectral/Itti-Koch/GMR/BMS + objectness), `xobjdetect`
+  (WaldBoost).
+- **Photo & imaging** — `photo` (denoise/inpaint/seamless-clone/stylization),
+  `hdr` (Debevec/Robertson/Mertens + AlignMTB + tonemap), `xphoto` (white
+  balance/BM3D/dehaze/FSR), `intensity` (gamma/Retinex/AGCWD/BIMEF), `fuzzy`
+  (F-transform), `bioinspired` (retina + transient-areas), `dnn_superres`
+  (LapSRN/ESPCN/NEDI/DCCI, classical).
+- **Segmentation, shape & stitching** — `segmentation` (watershed/GrabCut/
+  Felzenszwalb/selective-search/livewire), `shape` (shape-context/TPS/Hausdorff/
+  Hu moments), `ximgproc` (domain-transform/FGS/EdgeBoxes/SLIC/LSC), `stitching`
+  (warpers/exposure/seams/bundle-adjust/pipeline), `hfs`.
+- **Analysis & viz** — `ml` (KNN/SVM/RTrees/Boost/MLP/GMM/k-means + metrics),
+  `quality` (PSNR/SSIM/VIF/FSIM/NIQE/…), `imghash`, `plot` (14 chart types + 21
+  colormaps), `videoio` (GIF/APNG/MJPEG-AVI/sequences), `mcc` (ColorChecker +
+  CIEDE2000 + CCM), `gapi` (lazy computation-graph G-API).
+
+### CUDA-family packages (CPU-backed)
+
+A `cuda*` family — `cudaarithm`, `cudaimgproc`, `cudafilters`, `cudawarping`,
+`cudafeatures2d`, `cudabgsegm`, `cudaobjdetect`, `cudaoptflow`, `cudastereo`,
+`cudacodec`, `cudacore`, `cudalegacy` — mirrors the **API shape** of OpenCV's
+GPU modules so code ports naturally: same `GpuMat` / `Stream` vocabulary,
+`Upload`/`Download` calls, and function signatures. They are **CPU-backed and
+cgo-free** — `GpuMat` wraps an ordinary host `Mat` and `Stream` is a no-op, so
+you get API parity, *not* hardware acceleration. Every function is documented as
+such.
 
 ## Scope & limits
 

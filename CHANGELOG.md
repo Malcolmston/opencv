@@ -7,6 +7,41 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.5.0] - 2026-07-16
+### Added
+- **CUDA-family packages (CPU-backed API mirrors).** Twelve new packages —
+  `cudaarithm`, `cudaimgproc`, `cudafilters`, `cudawarping`, `cudafeatures2d`,
+  `cudabgsegm`, `cudaobjdetect`, `cudaoptflow`, `cudastereo`, `cudacodec`,
+  `cudacore`, `cudalegacy` — mirror the API shape of OpenCV's GPU modules with a
+  host-backed `GpuMat`, no-op `Stream`, and `Upload`/`Download` calls, delegating
+  the actual computation to the root `cv` package and sibling modules. They are
+  pure Go and cgo-free: API parity, not hardware acceleration, and every package
+  documents this honestly.
+- **`gapi`** — a pure-Go port of OpenCV's G-API: a lazy computation graph
+  (`GMat`/`GComputation`/`GCompiled` + custom-kernel packages) with 38 core and
+  imgproc graph operations that execute bit-identically to the eager pipeline.
+- **New contrib modules** — `ccalib` (omnidirectional/fisheye camera model +
+  custom calibration pattern), `xobjdetect` (WaldBoost detector over
+  integral-channel features), `hfs` (hierarchical feature-selection
+  segmentation), `rapid` (RAPID 3D object-pose tracking), and `videostab`
+  (global motion estimation, trajectory smoothing, motion inpainting and
+  deblurring).
+- **Root `cv` deepening** — 64 additional core and imgproc functions: dense
+  linear algebra (`Invert`, `Solve`, `Determinant`, `Eigen`, `SVDecomp`, `Gemm`,
+  `PCACompute`/`Project`/`BackProject`, `Mahalanobis`, `CalcCovarMatrix`), array
+  utilities (`Reduce`, `Repeat`, `Sort`, `MinMaxIdx`, `Transform`,
+  `ExtractChannel`/`InsertChannel`/`MixChannels`), element-wise math (`Exp`,
+  `Log`, `Pow`, `Sqrt`, `Magnitude`, `Phase`, `CartToPolar`, `PolarToCart`),
+  signal routines (`DFT`/`IDFT`, `DCT`/`IDCT`, `MulSpectrums`,
+  `CreateHanningWindow`, `PhaseCorrelate`), extended drawing (`DrawMarker`,
+  `ArrowedLine`, `GetTextSize`, `FillConvexPoly`, `BoxPoints`) and geometry
+  predicates (`PointPolygonTest`, `IsContourConvex`, `MinEnclosingCircle`,
+  `FitLine`, `MatchShapes`, `HuMoments`).
+- Documentation: corrected the root package overview (SIFT/ORB, calib3d, DNN and
+  video are now implemented, not out of scope) and added a Subpackages map;
+  refreshed the README Modules section and the docs-site content to cover all
+  57 packages.
+
 ## [0.4.0] - 2026-07-12
 ### Added
 - **~650 new functions deepening all 40 module subpackages toward OpenCV

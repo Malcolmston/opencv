@@ -5,10 +5,13 @@
 // The package is written entirely against the Go standard library — image,
 // image/color, image/png, image/jpeg, math and friends. It uses no cgo and no
 // third-party dependencies, so it builds and runs anywhere the Go toolchain
-// does. The trade-off is scope: heavyweight machine-vision machinery such as
-// dense feature descriptors (SIFT/ORB), camera calibration (calib3d), DNN
-// inference and video I/O are intentionally out of scope. What remains is a
-// faithful, genuinely useful image-processing and computer-vision toolkit.
+// does. This root package holds the core imgproc toolkit; the heavier
+// machine-vision machinery — dense feature descriptors (SIFT/ORB/AKAZE), camera
+// calibration and stereo (calib3d, stereo), DNN inference, optical flow and
+// video — lives in importable subpackages under this module (see Subpackages
+// below), each also standard-library-only. The remaining unavoidable gaps are
+// capabilities that genuinely need a GPU or trained model files, which a
+// zero-dependency, cgo-free port cannot provide.
 //
 // # The Mat type
 //
@@ -66,6 +69,48 @@
 // [GetPerspectiveTransform] with [WarpPerspective], [Remap], the [PyrDown] /
 // [PyrUp] Gaussian pyramid and [DistanceTransform]. Histogram tooling gains
 // [CalcBackProject], [CompareHist] and [CLAHE].
+//
+// # Linear algebra, signal and geometry
+//
+// Beyond image processing the root package carries the numerical core OpenCV
+// exposes in cv2: dense linear algebra over [FloatMat] — [Invert], [Solve],
+// [Determinant], [Trace], [Eigen], [SVDecomp], [Gemm], [PCACompute] /
+// [PCAProject] / [PCABackProject], [Mahalanobis] and [CalcCovarMatrix]; array
+// utilities [Reduce], [Repeat], [Sort], [SortIdx], [MinMaxIdx], [FindNonZero],
+// [Transform] and the channel helpers [ExtractChannel], [InsertChannel] and
+// [MixChannels]; element-wise math [Exp], [Log], [Pow], [Sqrt], [Magnitude],
+// [Phase], [CartToPolar] and [PolarToCart]; and the frequency-domain routines
+// [DFT], [IDFT], [DCT], [IDCT], [MulSpectrums], [CreateHanningWindow] and
+// [PhaseCorrelate]. Contour and shape predicates ([PointPolygonTest],
+// [IsContourConvex], [MinEnclosingCircle], [FitLine], [MatchShapes],
+// [HuMoments]) and extended drawing ([DrawMarker], [ArrowedLine], [GetTextSize],
+// [FillConvexPoly], [BoxPoints]) round out the core surface.
+//
+// # Subpackages
+//
+// This root package is the core; the wider computer-vision surface lives in
+// importable subpackages under the same module, each standard-library-only and
+// depending only on this package. They mirror OpenCV's main and contrib
+// modules:
+//
+//   - Features & matching: features2d, xfeatures2d, flann, linedescriptor
+//   - Geometry & 3D: calib3d, stereo, rgbd, surface_matching, structured_light,
+//     phase_unwrapping, ccalib, rapid
+//   - Detection & recognition: objdetect, face, aruco, barcode, datamatrix,
+//     text, dnn, saliency, xobjdetect
+//   - Motion & tracking: video, optflow, tracking, bgsegm, videostab
+//   - Photo & imaging: photo, xphoto, hdr, intensity, fuzzy, bioinspired,
+//     dnn_superres
+//   - Segmentation, shape & stitching: segmentation, shape, ximgproc,
+//     stitching, hfs
+//   - Analysis & viz: ml, quality, imghash, plot, videoio, mcc, gapi, imgprocx
+//
+// A family of cuda* packages (cudaarithm, cudaimgproc, cudafilters,
+// cudawarping, cudafeatures2d, cudabgsegm, cudaobjdetect, cudaoptflow,
+// cudastereo, cudacodec, cudacore, cudalegacy) mirrors the API shape of
+// OpenCV's GPU modules. They are CPU-backed and cgo-free: a GpuMat wraps an
+// ordinary host Mat and Stream is a no-op, so code ports naturally from
+// OpenCV's cuda modules but runs on the CPU — API parity, not acceleration.
 //
 // # Errors and panics
 //

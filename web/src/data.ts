@@ -19,12 +19,12 @@ export const OPENCV: Lib = {
     "You get the Mat core, PNG/JPEG I/O, colour conversions, filtering and convolution, thresholding, "+
     "morphology, geometric transforms, a full Canny pipeline, template matching, drawing and histograms — "+
     "an idiomatic, genuinely useful re-implementation of the cv2 essentials. On top of that root package "+
-    "sit 57 packages (~5,300 functions) mirroring OpenCV's main, contrib and — via CPU-backed shims — cuda "+
+    "sit 58 packages (~2,850 functions) mirroring OpenCV's main, contrib and — via CPU-backed shims — cuda "+
     "modules: features2d/xfeatures2d, calib3d/stereo/rgbd, dnn, tracking/optflow/video, face/aruco/barcode, "+
     "photo/hdr/xphoto, stitching, ml, a lazy-graph G-API, and a full cuda* family that ports OpenCV's GPU "+
     "API to the CPU. Each imports only cv and the standard library. The import path is "+
     "github.com/malcolmston/opencv, but the package is named cv.",
-  tags:["Mat core","PNG/JPEG I/O","colour conversion","convolution","Otsu threshold","morphology","warpAffine","Canny","57 packages","features2d","calib3d","dnn","tracking","G-API","cuda* (CPU)","stitching"],
+  tags:["Mat core","PNG/JPEG I/O","colour conversion","Canny","58 packages","features2d","calib3d","dnn","G-API","cuda* (CPU)"],
   features:[
     "<code>Mat</code> core — a dense row-major matrix of 8-bit samples with <code>FromImage</code>/<code>ToImage</code> stdlib bridges",
     "PNG + JPEG I/O via <code>ImRead</code>, <code>ImWrite</code>, <code>IMDecode</code> and <code>IMEncode</code>",
@@ -36,7 +36,7 @@ export const OPENCV: Lib = {
     "Edges &amp; matching — a full <code>Canny</code> pipeline and <code>MatchTemplate</code> with <code>MinMaxLoc</code>",
     "Drawing &amp; text — <code>Line</code>, <code>Rectangle</code>, <code>Circle</code>, <code>Ellipse</code>, <code>Polylines</code>, <code>FillPoly</code>, <code>PutText</code>",
     "Histograms — <code>CalcHist</code> and <code>EqualizeHist</code>",
-    "<b>57 packages · ~5,300 functions</b> mirroring OpenCV main + contrib + cuda, each importing only <code>cv</code> and the stdlib",
+    "<b>58 packages · ~2,850 functions</b> mirroring OpenCV main + contrib + cuda, each importing only <code>cv</code> and the stdlib",
     "2D features — <code>features2d</code> (ORB/SIFT/KAZE/AKAZE/matcher/BOW), <code>xfeatures2d</code> (FREAK/DAISY/SURF-lite), <code>flann</code>, <code>linedescriptor</code>",
     "Geometry &amp; 3D — <code>calib3d</code> (calibrate/stereo/solvePnP/essential), <code>stereo</code> (8-path SGM), <code>rgbd</code> (ICP/odometry/TSDF), <code>surface_matching</code>, <code>ccalib</code>, <code>rapid</code>",
     "Motion &amp; tracking — <code>video</code> (LK/Kalman/ECC/DIS), <code>optflow</code> (TV-L1/DeepFlow/RLOF), <code>tracking</code> (MOSSE/CSRT/TLD), <code>bgsegm</code>, <code>videostab</code>",

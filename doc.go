@@ -89,8 +89,8 @@
 // # Subpackages
 //
 // This root package is the core; the wider computer-vision surface lives in
-// importable subpackages under the same module, each standard-library-only and
-// depending only on this package. They mirror OpenCV's main and contrib
+// 58 importable subpackages under the same module, each standard-library-only
+// and depending only on this package. They mirror OpenCV's main and contrib
 // modules:
 //
 //   - Features & matching: features2d, xfeatures2d, flann, linedescriptor

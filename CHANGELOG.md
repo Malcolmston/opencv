@@ -5,6 +5,22 @@ All notable changes to this project are documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.7.0] - 2026-07-18
+### Added
+- 16 new standard-library-only computer-vision modules (~1200 new functions)
+  toward broader cv2 parity: colorspaces2 (extended color-space conversions,
+  white balance, quantization), morph2 (advanced morphology, thinning, distance
+  transform), filters2 (bilateral/guided/NLM/anisotropic/Gabor), edges2
+  (Canny/Hough lines+circles/LSD), threshold2 (Otsu/Sauvola/Niblack/adaptive),
+  texture (GLCM/Haralick/LBP/Gabor/Laws), moments2 (Hu/Zernike/Flusser/Fourier
+  descriptors), contours2 (border following, approxPolyDP, hull, fitting),
+  template2 (NCC/ZNCC multi-scale matching), transforms2 (affine/perspective/
+  polar/thin-plate warps), pyramids (Gaussian/Laplacian, blending), freqdomain
+  (2D FFT, frequency filters, phase correlation), features3 (Harris/FAST/BRIEF/
+  MSER/blobs), matching2 (BF/kd-tree matching, RANSAC, homography/fundamental),
+  tracking (Lucas-Kanade/Farneback/Kalman/mean-shift), segment2 (watershed/SLIC/
+  GrabCut/snakes).
+
 ## [Unreleased]
 
 ## [0.6.0] - 2026-07-18

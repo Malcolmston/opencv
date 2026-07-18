@@ -63,8 +63,7 @@ type MultiScaleParams struct {
 	Method Method
 	// MinScale and MaxScale bound the template scale factors to search
 	// (relative to the template's native size). Both must be positive.
-	MinScale float64
-	MaxScale float64
+	MinScale, MaxScale float64
 	// Levels is the number of scale steps sampled between MinScale and MaxScale
 	// (inclusive). It must be >= 1.
 	Levels int

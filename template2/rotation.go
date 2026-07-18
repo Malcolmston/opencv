@@ -58,8 +58,7 @@ type RotationParams struct {
 	// Method is the similarity measure to use.
 	Method Method
 	// MinAngle and MaxAngle bound the template rotations searched, in degrees.
-	MinAngle float64
-	MaxAngle float64
+	MinAngle, MaxAngle float64
 	// AngleStep is the spacing between sampled angles, in degrees. It must be
 	// positive.
 	AngleStep float64

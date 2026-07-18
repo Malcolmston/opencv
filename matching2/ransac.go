@@ -160,6 +160,7 @@ func LMedS[M any](
 // that a·px + b·py + c is the signed perpendicular distance from a point p to the
 // line.
 type Line2D struct {
+	// A, B, C are the line coefficients in a·x + b·y + c = 0, with (A, B) a unit normal.
 	A, B, C float64
 }
 

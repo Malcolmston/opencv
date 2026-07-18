@@ -5,6 +5,21 @@ All notable changes to this project are documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.8.0] - 2026-07-18
+### Added
+- 17 more standard-library-only computer-vision modules (~1300 new functions),
+  completing the second feature wave: connected (connected-components labeling),
+  histogram2 (histograms/CLAHE/back-projection), geom_cv (computational
+  geometry, Delaunay/Voronoi), calib2 (camera calibration), stereo2 (block/SGM
+  stereo + depth), inpaint (Telea/Navier-Stokes/exemplar), photo2 (HDR tonemap,
+  exposure fusion, stylization), draw2 (anti-aliased drawing, heatmaps),
+  barcode (1D/QR/DataMatrix decode + Reed-Solomon), textdet (SWT/MSER text
+  detection), imghash2 (perceptual hashes), saliency2 (spectral/fine-grained
+  saliency), superres (edge-directed/iterative super-resolution), videoproc
+  (background subtraction, motion, stabilization), ml2 (kNN/kMeans/SVM/trees/
+  PCA-LDA), stitch (panorama stitching), shapefit (least-squares/RANSAC/Hough
+  shape fitting). The module now spans 91 packages.
+
 ## [0.7.0] - 2026-07-18
 ### Added
 - 16 new standard-library-only computer-vision modules (~1200 new functions)

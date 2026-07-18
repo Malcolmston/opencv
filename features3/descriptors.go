@@ -17,10 +17,7 @@ type BRIEFPattern struct {
 	PatchSize int
 	// P1x, P1y, P2x, P2y hold the two sample offsets of each comparison, each
 	// slice one entry per descriptor bit.
-	P1x []int
-	P1y []int
-	P2x []int
-	P2y []int
+	P1x, P1y, P2x, P2y []int
 }
 
 // NumBits returns the number of comparison bits (descriptor length in bits).

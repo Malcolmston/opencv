@@ -63,8 +63,7 @@ type Match struct {
 // [DoGBlobs] and [DoHBlobs].
 type Blob struct {
 	// X and Y are the blob centre in pixel coordinates.
-	X float64
-	Y float64
+	X, Y float64
 	// Sigma is the Gaussian standard deviation of the detecting scale.
 	Sigma float64
 	// Response is the (absolute) operator response at the detection.

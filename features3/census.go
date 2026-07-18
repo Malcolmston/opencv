@@ -73,8 +73,7 @@ func CensusTransform5x5(img *cv.Mat) []uint32 {
 // and compare codes with [CensusField.Hamming].
 type CensusField struct {
 	// Rows and Cols are the image dimensions.
-	Rows int
-	Cols int
+	Rows, Cols int
 	// Bits is the number of neighbour-comparison bits stored per pixel.
 	Bits int
 	// Data holds one packed census code per pixel, indexed y*Cols+x.

@@ -200,9 +200,12 @@ func (e Ellipse) Area() float64 { return math.Pi * (e.Width / 2) * (e.Height / 2
 // central moments (translation invariant) are Mupq and normalised central
 // moments (scale invariant) are Nupq.
 type Moments struct {
+	// M00..M03 are the raw spatial moments Mpq of the shape up to third order.
 	M00, M10, M01, M20, M11, M02, M30, M21, M12, M03 float64
-	Mu20, Mu11, Mu02, Mu30, Mu21, Mu12, Mu03         float64
-	Nu20, Nu11, Nu02, Nu30, Nu21, Nu12, Nu03         float64
+	// Mu20..Mu03 are the central (translation-invariant) moments Mupq.
+	Mu20, Mu11, Mu02, Mu30, Mu21, Mu12, Mu03 float64
+	// Nu20..Nu03 are the normalised central (scale-invariant) moments Nupq.
+	Nu20, Nu11, Nu02, Nu30, Nu21, Nu12, Nu03 float64
 }
 
 // Centroid returns the centre of mass (M10/M00, M01/M00). It returns (0, 0) for

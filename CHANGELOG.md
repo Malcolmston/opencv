@@ -7,6 +7,60 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.6.0] - 2026-07-18
+### Added
+- **`core` package — OpenCV's core value types.** A new standard-library-only
+  subpackage porting the concrete fixed-size value types that cv2 exposes as
+  templated typedefs, which the root `cv` package previously lacked:
+  - **Points & sizes** — `Point2i/2f/2d` and `Point3i/3f/3d` with full vector
+    arithmetic (add, sub, scale, dot, ddot, cross, norm, normalize, inside,
+    conversions), `Size2i/2f/2d` (area, empty, aspect, arithmetic) and
+    `Rect2i/2f/2d` (tl/br, area, contains, intersection `And`, union `Or`,
+    shift).
+  - **Vectors** — the complete `cv::Vec` family (`Vec2b`…`Vec8i`,
+    `Vec2f`…`Vec6f`, `Vec2d`…`Vec6d`; 22 concrete types) with add/sub/scale,
+    Hadamard product, dot, L1/L2 norms, 3-element cross product, float
+    normalization and type conversions.
+  - **Matrices** — the complete `cv::Matx` family (all 32 typedefs from `Matx12`
+    to `Matx66` in float32 and float64) with element arithmetic, transpose,
+    matrix and matrix–vector products, trace, determinant and inverse (Gaussian
+    elimination in float64).
+  - **Helpers** — `Scalar`, `Complexf/Complexd`, `Range`, `RotatedRect`,
+    `TermCriteria`, `KeyPoint` (with region-overlap IoU) and `DMatch`.
+  - **3D transforms** — `Affine3f/Affine3d` (compose, invert, transform),
+    Rodrigues rotation-vector ↔ matrix conversion, and `Quatf/Quatd`
+    quaternions (Hamilton product, rotation matrix ↔ quaternion, axis-angle,
+    spherical linear interpolation `Slerpd`).
+  - **Geometry free functions** — point-set distances, bounding rectangles,
+    centroids, signed/absolute polygon area, perimeter, monotone-chain
+    `ConvexHull2f`, convexity test, segment intersection, point-in-triangle and
+    point-to-segment distance.
+  - **RNG** — deterministic `RNG` (multiply-with-carry) and `RNGMT19937`
+    (Mersenne Twister) matching OpenCV's `cv::RNG`/`cv::RNG_MT19937`, with
+    uniform, Gaussian and fill helpers.
+- **Root `cv` imgproc/core deepening.** New standard-library-only functions
+  toward parity with cv2's imgproc and core modules:
+  - **Statistics** — `Mean`, `MeanStdDev`, `SumElems`, `NormL1Mat`, `NormL2Mat`,
+    `NormInfMat`, `PSNR`, `MSE`, `VarianceMat`, `StdDevMat`, `Entropy`, `Median`
+    and `MinMaxLocMat`.
+  - **Borders & tables** — `CopyMakeBorder`, `BorderInterpolate` (with the
+    `BorderType` modes) and `LUT`/`LUTChannels`.
+  - **Filtering & derivatives** — `GetGaussianKernel`, `GetDerivKernels`,
+    `GaussianKernel2D`, `SqrBoxFilter` and separable triangular-window
+    `StackBlur`.
+  - **Geometry & sampling** — `GetRectSubPix`, `GetAffineTransform`,
+    `InvertAffineTransform`, `WarpPolar`/`LinearPolar`/`LogPolar`,
+    `CornerMinEigenVal`, `FloodFill` and a Bresenham `LineIterator`.
+  - **Colour** — `RGBToXYZ`/`XYZToRGB`, `RGBToYUV`/`YUVToRGB`,
+    `RGBToCMYK`/`CMYKToRGB`, `RGBToHSVFull`/`HSVFullToRGB`,
+    `RGBToGray601`/`RGBToGray709`, `Demosaic` (Bayer), `GammaCorrect` and
+    `TriangleThreshold`.
+
+  All additions are pure Go standard library (no cgo, no third-party imports),
+  deterministic, fully godoc-documented, and covered by known-answer table
+  tests with benchmarks for the performance-sensitive routines. This adds 1070
+  new exported functions and types (a ~30% increase in the exported surface).
+
 ## [0.5.0] - 2026-07-16
 ### Added
 - **CUDA-family packages (CPU-backed API mirrors).** Twelve new packages —

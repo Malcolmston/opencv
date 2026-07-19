@@ -107,17 +107,31 @@ type segment2wsItem struct {
 	index    int
 }
 
+// segment2wsHeap is a min-heap of segment2wsItem implementing heap.Interface,
+// ordering by ascending priority with FIFO tie-breaking for deterministic
+// Meyer flooding.
 type segment2wsHeap []segment2wsItem
 
+// Len reports the number of items in the heap; it is part of heap.Interface.
 func (h segment2wsHeap) Len() int { return len(h) }
+
+// Less orders items by ascending priority, breaking ties by ascending FIFO
+// order; it is part of heap.Interface.
 func (h segment2wsHeap) Less(i, j int) bool {
 	if h[i].priority != h[j].priority {
 		return h[i].priority < h[j].priority
 	}
 	return h[i].order < h[j].order
 }
-func (h segment2wsHeap) Swap(i, j int)       { h[i], h[j] = h[j], h[i] }
+
+// Swap exchanges the items at indices i and j; it is part of heap.Interface.
+func (h segment2wsHeap) Swap(i, j int) { h[i], h[j] = h[j], h[i] }
+
+// Push appends x, a segment2wsItem, to the heap; it is part of heap.Interface.
 func (h *segment2wsHeap) Push(x interface{}) { *h = append(*h, x.(segment2wsItem)) }
+
+// Pop removes and returns the last item of the heap; it is part of
+// heap.Interface.
 func (h *segment2wsHeap) Pop() interface{} {
 	old := *h
 	n := len(old)

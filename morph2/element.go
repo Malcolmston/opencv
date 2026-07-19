@@ -9,6 +9,8 @@ import (
 // Shape selects the geometry of a structuring element built by [NewElement].
 type Shape int
 
+// ShapeRect, ShapeCross, ShapeEllipse, ShapeDiamond and ShapeDisk are the
+// supported structuring-element shapes.
 const (
 	// ShapeRect is a solid rectangle: every cell is set.
 	ShapeRect Shape = iota

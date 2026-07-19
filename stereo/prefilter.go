@@ -9,6 +9,8 @@ import cv "github.com/malcolmston/opencv"
 // brightness.
 type PrefilterType int
 
+// PrefilterNone, PrefilterXSobel and PrefilterNormalizedResponse are the
+// supported pre-filter modes.
 const (
 	// PrefilterNone leaves the image unchanged.
 	PrefilterNone PrefilterType = iota

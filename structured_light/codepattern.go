@@ -11,6 +11,8 @@ import (
 // sequence projected for it.
 type Encoding int
 
+// EncodingGray and EncodingBinary are the supported projector-coordinate
+// encodings.
 const (
 	// EncodingGray uses binary reflected Gray code: adjacent coordinates differ
 	// in exactly one projected bit, so a single mis-decoded bit can only move the

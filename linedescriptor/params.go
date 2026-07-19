@@ -59,6 +59,8 @@ func (p BinaryDescriptorParams) Validate() error {
 // paramError is a small error type describing an invalid parameter value.
 type paramError struct{ msg string }
 
+// Error implements the error interface, returning the message prefixed with
+// the "linedescriptor: " package tag.
 func (e *paramError) Error() string { return "linedescriptor: " + e.msg }
 
 // NewBinaryDescriptorWithParams builds a [BinaryDescriptor] whose band geometry

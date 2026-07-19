@@ -21,10 +21,23 @@ type fmmItem struct {
 // fmmHeap is a min-heap of fmmItem by t.
 type fmmHeap []fmmItem
 
-func (h fmmHeap) Len() int            { return len(h) }
-func (h fmmHeap) Less(i, j int) bool  { return h[i].t < h[j].t }
-func (h fmmHeap) Swap(i, j int)       { h[i], h[j] = h[j], h[i] }
+// Len reports the number of items in the heap, implementing sort.Interface.
+func (h fmmHeap) Len() int { return len(h) }
+
+// Less reports whether item i should sort before item j, implementing
+// sort.Interface. It orders items by ascending arrival time t so the pixel with
+// the smallest t is processed first.
+func (h fmmHeap) Less(i, j int) bool { return h[i].t < h[j].t }
+
+// Swap exchanges items i and j, implementing sort.Interface.
+func (h fmmHeap) Swap(i, j int) { h[i], h[j] = h[j], h[i] }
+
+// Push appends x, which must be an fmmItem, to the heap, implementing
+// heap.Interface.
 func (h *fmmHeap) Push(x interface{}) { *h = append(*h, x.(fmmItem)) }
+
+// Pop removes and returns the last item of the heap, implementing
+// heap.Interface.
 func (h *fmmHeap) Pop() interface{} {
 	old := *h
 	n := len(old)

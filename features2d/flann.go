@@ -153,10 +153,23 @@ type branch struct {
 
 type branchHeap []branch
 
-func (h branchHeap) Len() int            { return len(h) }
-func (h branchHeap) Less(i, j int) bool  { return h[i].minDist < h[j].minDist }
-func (h branchHeap) Swap(i, j int)       { h[i], h[j] = h[j], h[i] }
+// Len reports the number of items in the heap, implementing sort.Interface.
+func (h branchHeap) Len() int { return len(h) }
+
+// Less reports whether item i should sort before item j, implementing
+// sort.Interface. It orders branches by ascending minimum distance so the
+// closest branch is explored first.
+func (h branchHeap) Less(i, j int) bool { return h[i].minDist < h[j].minDist }
+
+// Swap exchanges items i and j, implementing sort.Interface.
+func (h branchHeap) Swap(i, j int) { h[i], h[j] = h[j], h[i] }
+
+// Push appends x, which must be a branch, to the heap, implementing
+// heap.Interface.
 func (h *branchHeap) Push(x interface{}) { *h = append(*h, x.(branch)) }
+
+// Pop removes and returns the last item of the heap, implementing
+// heap.Interface.
 func (h *branchHeap) Pop() interface{} {
 	old := *h
 	n := len(old)

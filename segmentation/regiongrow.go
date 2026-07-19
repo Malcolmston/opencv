@@ -141,15 +141,28 @@ type growItem struct {
 // insertion order so growth is deterministic.
 type growHeap []growItem
 
+// Len reports the number of items in the heap, implementing sort.Interface.
 func (h growHeap) Len() int { return len(h) }
+
+// Less reports whether item i should sort before item j, implementing
+// sort.Interface. Items are ordered by ascending priority, with ties broken by
+// the smaller insertion sequence so growth is deterministic.
 func (h growHeap) Less(i, j int) bool {
 	if h[i].priority != h[j].priority {
 		return h[i].priority < h[j].priority
 	}
 	return h[i].seq < h[j].seq
 }
+
+// Swap exchanges items i and j, implementing sort.Interface.
 func (h growHeap) Swap(i, j int) { h[i], h[j] = h[j], h[i] }
-func (h *growHeap) Push(x any)   { *h = append(*h, x.(growItem)) }
+
+// Push appends x, which must be a growItem, to the heap, implementing
+// heap.Interface.
+func (h *growHeap) Push(x any) { *h = append(*h, x.(growItem)) }
+
+// Pop removes and returns the last item of the heap, implementing
+// heap.Interface.
 func (h *growHeap) Pop() any {
 	old := *h
 	n := len(old)

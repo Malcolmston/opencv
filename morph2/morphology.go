@@ -138,6 +138,8 @@ func BlackHat(src *cv.Mat, e *Element) *cv.Mat {
 // Op selects the compound operation performed by [MorphologyEx].
 type Op int
 
+// OpErode, OpDilate, OpOpen, OpClose, OpGradient, OpTopHat and OpBlackHat are
+// the compound operations accepted by [MorphologyEx].
 const (
 	// OpErode is a plain erosion.
 	OpErode Op = iota

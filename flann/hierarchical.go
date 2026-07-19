@@ -183,10 +183,24 @@ type hclBranch struct {
 
 type hclBranchHeap []hclBranch
 
-func (q hclBranchHeap) Len() int           { return len(q) }
+// Len reports the number of pending branches in the heap, implementing
+// sort.Interface as required by container/heap.
+func (q hclBranchHeap) Len() int { return len(q) }
+
+// Less reports whether branch i is closer to the query than branch j, ordering
+// the heap as a min-heap on dist so the nearest centre is popped first.
 func (q hclBranchHeap) Less(i, j int) bool { return q[i].dist < q[j].dist }
-func (q hclBranchHeap) Swap(i, j int)      { q[i], q[j] = q[j], q[i] }
-func (q *hclBranchHeap) Push(x any)        { *q = append(*q, x.(hclBranch)) }
+
+// Swap exchanges branches i and j, implementing sort.Interface as required by
+// container/heap.
+func (q hclBranchHeap) Swap(i, j int) { q[i], q[j] = q[j], q[i] }
+
+// Push appends x, which must be an hclBranch, to the heap. It implements
+// container/heap.Interface and is invoked through heap.Push rather than directly.
+func (q *hclBranchHeap) Push(x any) { *q = append(*q, x.(hclBranch)) }
+
+// Pop removes and returns the last branch in the underlying slice. It implements
+// container/heap.Interface and is invoked through heap.Pop rather than directly.
 func (q *hclBranchHeap) Pop() any {
 	old := *q
 	n := len(old)

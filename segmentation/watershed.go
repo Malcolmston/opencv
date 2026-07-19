@@ -164,15 +164,28 @@ type pixelItem struct {
 // pixelHeap is a min-heap of pixelItem ordered by priority then insertion order.
 type pixelHeap []pixelItem
 
+// Len reports the number of items in the heap, implementing sort.Interface.
 func (h pixelHeap) Len() int { return len(h) }
+
+// Less reports whether item i should sort before item j, implementing
+// sort.Interface. Items are ordered by ascending priority, with ties broken by
+// the smaller insertion sequence so ordering is deterministic.
 func (h pixelHeap) Less(i, j int) bool {
 	if h[i].priority != h[j].priority {
 		return h[i].priority < h[j].priority
 	}
 	return h[i].seq < h[j].seq
 }
+
+// Swap exchanges items i and j, implementing sort.Interface.
 func (h pixelHeap) Swap(i, j int) { h[i], h[j] = h[j], h[i] }
-func (h *pixelHeap) Push(x any)   { *h = append(*h, x.(pixelItem)) }
+
+// Push appends x, which must be a pixelItem, to the heap, implementing
+// heap.Interface.
+func (h *pixelHeap) Push(x any) { *h = append(*h, x.(pixelItem)) }
+
+// Pop removes and returns the last item of the heap, implementing
+// heap.Interface.
 func (h *pixelHeap) Pop() any {
 	old := *h
 	n := len(old)

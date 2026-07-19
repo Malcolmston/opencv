@@ -6,6 +6,7 @@ import cv "github.com/malcolmston/opencv"
 // routines.
 type Connectivity int
 
+// Conn4 and Conn8 are the supported connectivity values.
 const (
 	// Conn4 is 4-connectivity: the horizontal and vertical neighbours only.
 	Conn4 Connectivity = 4

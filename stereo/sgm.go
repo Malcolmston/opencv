@@ -7,6 +7,7 @@ import (
 // SGMMode selects the set of aggregation paths used by [StereoSGM].
 type SGMMode int
 
+// ModeSGBM and ModeHH are the supported aggregation-path sets.
 const (
 	// ModeSGBM aggregates along the four cardinal directions (left, right, up,
 	// down), like the lighter [StereoSGBM].

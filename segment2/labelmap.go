@@ -7,6 +7,7 @@ import (
 // Connectivity selects the pixel neighbourhood used by region-based routines.
 type Connectivity int
 
+// Conn4 and Conn8 are the supported pixel neighbourhoods.
 const (
 	// Conn4 considers the four edge-adjacent neighbours (N, S, E, W).
 	Conn4 Connectivity = 4

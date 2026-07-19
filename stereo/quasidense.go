@@ -55,15 +55,27 @@ type growCandidate struct {
 // the most confident correspondence is always propagated next.
 type candidateHeap []growCandidate
 
+// Len reports the number of items in the heap; it is part of heap.Interface.
 func (h candidateHeap) Len() int { return len(h) }
+
+// Less orders items by descending correlation, so the most confident
+// candidate is at the root, breaking ties by ascending insertion order; it is
+// part of heap.Interface.
 func (h candidateHeap) Less(i, j int) bool {
 	if h[i].Corr != h[j].Corr {
 		return h[i].Corr > h[j].Corr
 	}
 	return h[i].Seq < h[j].Seq
 }
+
+// Swap exchanges the items at indices i and j; it is part of heap.Interface.
 func (h candidateHeap) Swap(i, j int) { h[i], h[j] = h[j], h[i] }
-func (h *candidateHeap) Push(x any)   { *h = append(*h, x.(growCandidate)) }
+
+// Push appends x, a growCandidate, to the heap; it is part of heap.Interface.
+func (h *candidateHeap) Push(x any) { *h = append(*h, x.(growCandidate)) }
+
+// Pop removes and returns the last item of the heap; it is part of
+// heap.Interface.
 func (h *candidateHeap) Pop() any {
 	old := *h
 	n := len(old)

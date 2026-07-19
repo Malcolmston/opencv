@@ -166,10 +166,24 @@ type kdBranch struct {
 // kdBranchHeap is a min-heap of pending subtrees, smallest lower bound first.
 type kdBranchHeap []kdBranch
 
-func (h kdBranchHeap) Len() int           { return len(h) }
+// Len reports the number of pending subtrees in the heap, implementing
+// sort.Interface as required by container/heap.
+func (h kdBranchHeap) Len() int { return len(h) }
+
+// Less reports whether subtree i has a smaller distance lower bound than
+// subtree j, ordering the heap as a min-heap on mindsq.
 func (h kdBranchHeap) Less(i, j int) bool { return h[i].mindsq < h[j].mindsq }
-func (h kdBranchHeap) Swap(i, j int)      { h[i], h[j] = h[j], h[i] }
-func (h *kdBranchHeap) Push(x any)        { *h = append(*h, x.(kdBranch)) }
+
+// Swap exchanges subtrees i and j, implementing sort.Interface as required by
+// container/heap.
+func (h kdBranchHeap) Swap(i, j int) { h[i], h[j] = h[j], h[i] }
+
+// Push appends x, which must be a kdBranch, to the heap. It implements
+// container/heap.Interface and is invoked through heap.Push rather than directly.
+func (h *kdBranchHeap) Push(x any) { *h = append(*h, x.(kdBranch)) }
+
+// Pop removes and returns the last subtree in the underlying slice. It implements
+// container/heap.Interface and is invoked through heap.Pop rather than directly.
 func (h *kdBranchHeap) Pop() any {
 	old := *h
 	n := len(old)

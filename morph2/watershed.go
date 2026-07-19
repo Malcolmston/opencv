@@ -146,17 +146,26 @@ type wsItem struct {
 
 type wsHeap []wsItem
 
-// Len, Less, Swap, Push and Pop implement heap.Interface for the flooding
-// priority queue, ordering by intensity level then discovery order.
+// Len reports the number of items in the heap; it is part of heap.Interface.
 func (h wsHeap) Len() int { return len(h) }
+
+// Less orders items by ascending intensity level, breaking ties by ascending
+// discovery order; it is part of heap.Interface.
 func (h wsHeap) Less(i, j int) bool {
 	if h[i].level != h[j].level {
 		return h[i].level < h[j].level
 	}
 	return h[i].order < h[j].order
 }
-func (h wsHeap) Swap(i, j int)       { h[i], h[j] = h[j], h[i] }
+
+// Swap exchanges the items at indices i and j; it is part of heap.Interface.
+func (h wsHeap) Swap(i, j int) { h[i], h[j] = h[j], h[i] }
+
+// Push appends x, a wsItem, to the heap; it is part of heap.Interface.
 func (h *wsHeap) Push(x interface{}) { *h = append(*h, x.(wsItem)) }
+
+// Pop removes and returns the last item of the heap; it is part of
+// heap.Interface.
 func (h *wsHeap) Pop() interface{} {
 	old := *h
 	n := len(old)

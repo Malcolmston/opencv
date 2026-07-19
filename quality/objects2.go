@@ -15,12 +15,17 @@ func NewQualityRMSE(ref *cv.Mat) QualityBase {
 	return &qualityRMSE{ref: ref}
 }
 
+// Compute scores cmp against the stored reference, returning the per-channel
+// [RMSE] and recording the pooled squared-error map returned by QualityMap. It
+// implements [QualityBase].
 func (q *qualityRMSE) Compute(cmp *cv.Mat) []float64 {
 	requireComparable(q.ref, cmp, "QualityRMSE.Compute")
 	q.qmap = squaredErrorMap(q.ref, cmp)
 	return RMSE(q.ref, cmp)
 }
 
+// QualityMap returns the pooled squared-error map from the most recent Compute,
+// or nil if Compute has not been called. It implements [QualityBase].
 func (q *qualityRMSE) QualityMap() *cv.Mat { return q.qmap }
 
 // qualityFSIM is the object form of [FSIM]/[FSIMc].
@@ -47,6 +52,10 @@ func NewQualityFSIMc(ref *cv.Mat) QualityBase {
 	return &qualityFSIM{ref: ref, color: ref.Channels == 3}
 }
 
+// Compute scores cmp against the stored reference, returning the [FSIM] (or the
+// colour [FSIMc] when constructed with NewQualityFSIMc) as a one-element slice
+// and recording the per-pixel feature-similarity map returned by QualityMap. It
+// implements [QualityBase].
 func (q *qualityFSIM) Compute(cmp *cv.Mat) []float64 {
 	requireComparable(q.ref, cmp, "QualityFSIM.Compute")
 	num, den, slMap := fsimAccumulate(toGray(q.ref), toGray(cmp), q.ref, cmp, q.color)
@@ -57,6 +66,8 @@ func (q *qualityFSIM) Compute(cmp *cv.Mat) []float64 {
 	return []float64{num / den}
 }
 
+// QualityMap returns the per-pixel feature-similarity map from the most recent
+// Compute, or nil if Compute has not been called. It implements [QualityBase].
 func (q *qualityFSIM) QualityMap() *cv.Mat { return q.qmap }
 
 // qualityVIFP is the object form of [VIFP].
@@ -73,10 +84,15 @@ func NewQualityVIFP(ref *cv.Mat) QualityBase {
 	return &qualityVIFP{ref: ref}
 }
 
+// Compute scores cmp against the stored reference, returning the [VIFP] as a
+// one-element slice and recording the per-pixel SSIM map returned by QualityMap.
+// It implements [QualityBase].
 func (q *qualityVIFP) Compute(cmp *cv.Mat) []float64 {
 	requireComparable(q.ref, cmp, "QualityVIFP.Compute")
 	q.qmap = SSIMMap(q.ref, cmp)
 	return []float64{VIFP(q.ref, cmp)}
 }
 
+// QualityMap returns the per-pixel SSIM map from the most recent Compute, or nil
+// if Compute has not been called. It implements [QualityBase].
 func (q *qualityVIFP) QualityMap() *cv.Mat { return q.qmap }

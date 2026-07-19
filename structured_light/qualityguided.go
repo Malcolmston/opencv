@@ -12,10 +12,21 @@ type qgItem struct {
 // qgQueue is a max-heap of qgItem by quality.
 type qgQueue []qgItem
 
-func (q qgQueue) Len() int            { return len(q) }
-func (q qgQueue) Less(i, j int) bool  { return q[i].qual > q[j].qual }
-func (q qgQueue) Swap(i, j int)       { q[i], q[j] = q[j], q[i] }
+// Len reports the number of items in the queue; it is part of heap.Interface.
+func (q qgQueue) Len() int { return len(q) }
+
+// Less orders items by descending quality, so the highest-quality candidate is
+// at the root; it is part of heap.Interface.
+func (q qgQueue) Less(i, j int) bool { return q[i].qual > q[j].qual }
+
+// Swap exchanges the items at indices i and j; it is part of heap.Interface.
+func (q qgQueue) Swap(i, j int) { q[i], q[j] = q[j], q[i] }
+
+// Push appends x, a qgItem, to the queue; it is part of heap.Interface.
 func (q *qgQueue) Push(x interface{}) { *q = append(*q, x.(qgItem)) }
+
+// Pop removes and returns the last item of the queue; it is part of
+// heap.Interface.
 func (q *qgQueue) Pop() interface{} {
 	old := *q
 	n := len(old)

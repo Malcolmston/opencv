@@ -236,10 +236,24 @@ type branchItem struct {
 // branchHeap is a min-heap of pending subtrees, nearest centre first.
 type branchHeap []branchItem
 
-func (h branchHeap) Len() int           { return len(h) }
+// Len reports the number of pending subtrees in the heap, implementing
+// sort.Interface as required by container/heap.
+func (h branchHeap) Len() int { return len(h) }
+
+// Less reports whether subtree i is closer to the query than subtree j, ordering
+// the heap as a min-heap on dist so the nearest centre is popped first.
 func (h branchHeap) Less(i, j int) bool { return h[i].dist < h[j].dist }
-func (h branchHeap) Swap(i, j int)      { h[i], h[j] = h[j], h[i] }
-func (h *branchHeap) Push(x any)        { *h = append(*h, x.(branchItem)) }
+
+// Swap exchanges subtrees i and j, implementing sort.Interface as required by
+// container/heap.
+func (h branchHeap) Swap(i, j int) { h[i], h[j] = h[j], h[i] }
+
+// Push appends x, which must be a branchItem, to the heap. It implements
+// container/heap.Interface and is invoked through heap.Push rather than directly.
+func (h *branchHeap) Push(x any) { *h = append(*h, x.(branchItem)) }
+
+// Pop removes and returns the last subtree in the underlying slice. It implements
+// container/heap.Interface and is invoked through heap.Pop rather than directly.
 func (h *branchHeap) Pop() any {
 	old := *h
 	n := len(old)

@@ -21,6 +21,8 @@ const costSentinel = int32(1 << 30)
 // [CostVolume] with [MatchingCostVolume].
 type CostType int
 
+// CostSAD, CostSSD, CostAD and CostCensus are the supported dissimilarity
+// measures.
 const (
 	// CostSAD is the sum of absolute intensity differences over the block window.
 	CostSAD CostType = iota

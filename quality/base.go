@@ -45,6 +45,10 @@ func NewQualityPSNR(ref *cv.Mat) QualityBase {
 	return &qualityMSE{ref: ref, psnr: true}
 }
 
+// Compute scores cmp against the stored reference, returning the per-channel
+// [MSE] (or the pooled [PSNR] as a one-element slice when the metric was
+// constructed with NewQualityPSNR), and records the pooled squared-error map
+// returned by QualityMap. It implements [QualityBase].
 func (q *qualityMSE) Compute(cmp *cv.Mat) []float64 {
 	requireComparable(q.ref, cmp, "QualityMSE.Compute")
 	q.qmap = squaredErrorMap(q.ref, cmp)
@@ -54,6 +58,8 @@ func (q *qualityMSE) Compute(cmp *cv.Mat) []float64 {
 	return MSE(q.ref, cmp)
 }
 
+// QualityMap returns the pooled squared-error map from the most recent Compute,
+// or nil if Compute has not been called. It implements [QualityBase].
 func (q *qualityMSE) QualityMap() *cv.Mat { return q.qmap }
 
 // squaredErrorMap builds a single-channel map of the per-pixel squared error
@@ -87,6 +93,9 @@ func NewQualitySSIM(ref *cv.Mat) QualityBase {
 	return &qualitySSIM{ref: ref}
 }
 
+// Compute scores cmp against the stored reference, returning the mean [SSIM] as
+// a one-element slice and recording the per-pixel SSIM map returned by
+// QualityMap. It implements [QualityBase].
 func (q *qualitySSIM) Compute(cmp *cv.Mat) []float64 {
 	requireComparable(q.ref, cmp, "QualitySSIM.Compute")
 	mean, m := SSIM(q.ref, cmp)
@@ -94,6 +103,8 @@ func (q *qualitySSIM) Compute(cmp *cv.Mat) []float64 {
 	return []float64{mean}
 }
 
+// QualityMap returns the per-pixel SSIM map from the most recent Compute, or nil
+// if Compute has not been called. It implements [QualityBase].
 func (q *qualitySSIM) QualityMap() *cv.Mat { return q.qmap }
 
 // qualityGMSD is the object form of [GMSD].
@@ -110,6 +121,9 @@ func NewQualityGMSD(ref *cv.Mat) QualityBase {
 	return &qualityGMSD{ref: ref}
 }
 
+// Compute scores cmp against the stored reference, returning the [GMSD] as a
+// one-element slice and recording the per-pixel gradient-magnitude-similarity
+// map returned by QualityMap. It implements [QualityBase].
 func (q *qualityGMSD) Compute(cmp *cv.Mat) []float64 {
 	requireComparable(q.ref, cmp, "QualityGMSD.Compute")
 	dev, m := GMSD(q.ref, cmp)
@@ -117,4 +131,7 @@ func (q *qualityGMSD) Compute(cmp *cv.Mat) []float64 {
 	return []float64{dev}
 }
 
+// QualityMap returns the per-pixel gradient-magnitude-similarity map from the
+// most recent Compute, or nil if Compute has not been called. It implements
+// [QualityBase].
 func (q *qualityGMSD) QualityMap() *cv.Mat { return q.qmap }

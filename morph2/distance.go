@@ -98,6 +98,7 @@ func (g *FloatGrid) ToMat(normalize bool) *cv.Mat {
 // DistanceType selects the metric approximated by a distance transform.
 type DistanceType int
 
+// DistL1, DistL2 and DistC are the supported distance metrics.
 const (
 	// DistL1 is the city-block (Manhattan) metric.
 	DistL1 DistanceType = iota
@@ -111,6 +112,7 @@ const (
 // transform.
 type DistanceMask int
 
+// Mask3, Mask5 and MaskPrecise are the supported distance-transform masks.
 const (
 	// Mask3 uses a 3x3 chamfer mask.
 	Mask3 DistanceMask = iota

@@ -187,7 +187,7 @@ such.
 ## Documentation
 
 - Full API reference on [pkg.go.dev](https://pkg.go.dev/github.com/malcolmston/opencv).
-- Docs site: <https://malcolmston.github.io/opencv/>.
+- Docs site: <https://go-malcolms-projects-18e573c3.vercel.app/lib/opencv>.
 
 ## License
 
